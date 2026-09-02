@@ -1,0 +1,3985 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CV AI OCR · Generador inteligente de CV</title>
+
+<!-- =========================================================
+     LIBRERÍAS
+     ========================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+<style>
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+:root {
+
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+
+    --secondary: #0f172a;
+
+    --background: #f1f5f9;
+
+    --card: #ffffff;
+
+    --border: #e2e8f0;
+
+    --muted: #64748b;
+
+    --success: #16a34a;
+
+    --danger: #dc2626;
+
+    --warning: #f59e0b;
+
+    --purple: #7c3aed;
+
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+
+    margin: 0;
+
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background: var(--background);
+
+    color: var(--secondary);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+header {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(255,255,255,.20),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #172554,
+            #2563eb,
+            #4f46e5
+        );
+
+    color: white;
+
+    padding: 55px 20px;
+
+    text-align: center;
+}
+
+header h1 {
+
+    margin: 0;
+
+    font-size:
+        clamp(30px, 6vw, 48px);
+
+    font-weight: 900;
+
+}
+
+header p {
+
+    margin: 12px auto 0;
+
+    max-width: 700px;
+
+    opacity: .9;
+
+    font-size: 16px;
+
+}
+
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
+.container {
+
+    width:
+        min(1250px, 94%);
+
+    margin:
+        30px auto 70px;
+
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card {
+
+    background: var(--card);
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 22px;
+
+    padding: 25px;
+
+    box-shadow:
+        0 15px 40px
+        rgba(15,23,42,.07);
+
+}
+
+.card + .card {
+    margin-top: 25px;
+}
+
+.card-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 22px;
+
+}
+
+.card-title h2 {
+
+    margin: 0;
+
+    font-size: 21px;
+
+}
+
+
+/* =========================================================
+   STEP
+   ========================================================= */
+
+.step {
+
+    width: 34px;
+
+    height: 34px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--purple)
+        );
+
+    color: white;
+
+    font-weight: 900;
+
+    font-size: 14px;
+
+}
+
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.grid {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(320px, 1fr)
+        minmax(320px, 1fr);
+
+    gap: 25px;
+
+}
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 13px;
+
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn {
+
+    border: 0;
+
+    border-radius: 11px;
+
+    padding:
+        12px 17px;
+
+    font: inherit;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        .18s ease;
+
+}
+
+.btn:hover {
+
+    transform:
+        translateY(-2px);
+
+}
+
+.btn:disabled {
+
+    opacity: .5;
+
+    cursor:
+        not-allowed;
+
+    transform:
+        none;
+
+}
+
+.btn-primary {
+
+    background:
+        var(--primary);
+
+    color: white;
+
+}
+
+.btn-primary:hover {
+
+    background:
+        var(--primary-dark);
+
+}
+
+.btn-success {
+
+    background:
+        var(--success);
+
+    color: white;
+
+}
+
+.btn-purple {
+
+    background:
+        var(--purple);
+
+    color: white;
+
+}
+
+.btn-secondary {
+
+    background:
+        #e2e8f0;
+
+    color:
+        #0f172a;
+
+}
+
+.btn-danger {
+
+    background:
+        var(--danger);
+
+    color: white;
+
+}
+
+
+/* =========================================================
+   CAMERA
+   ========================================================= */
+
+.scanner {
+
+    border:
+        2px dashed #93c5fd;
+
+    background:
+        linear-gradient(
+            135deg,
+            #eff6ff,
+            #eef2ff
+        );
+
+    border-radius:
+        18px;
+
+    padding:
+        30px 20px;
+
+    text-align:
+        center;
+
+}
+
+.scanner-icon {
+
+    font-size:
+        60px;
+
+}
+
+.scanner h3 {
+
+    margin:
+        10px 0 5px;
+
+}
+
+.scanner p {
+
+    color:
+        var(--muted);
+
+    font-size:
+        13px;
+
+}
+
+
+.camera-actions {
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    justify-content:
+        center;
+
+    gap:
+        10px;
+
+    margin-top:
+        20px;
+
+}
+
+.file-input {
+
+    display:
+        none;
+
+}
+
+
+/* =========================================================
+   PREVIEW
+   ========================================================= */
+
+.document-preview {
+
+    display:
+        none;
+
+    width:
+        100%;
+
+    max-height:
+        300px;
+
+    object-fit:
+        contain;
+
+    margin-top:
+        20px;
+
+    border-radius:
+        14px;
+
+    background:
+        #e2e8f0;
+
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.progress-area {
+
+    display:
+        none;
+
+    margin-top:
+        20px;
+
+}
+
+.progress {
+
+    width:
+        100%;
+
+    height:
+        12px;
+
+    border-radius:
+        20px;
+
+    background:
+        #e2e8f0;
+
+    overflow:
+        hidden;
+
+}
+
+.progress-bar {
+
+    width:
+        0%;
+
+    height:
+        100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #7c3aed,
+            #06b6d4
+        );
+
+    transition:
+        width .2s;
+
+}
+
+.status {
+
+    margin-top:
+        8px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        13px;
+
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form-group {
+
+    margin-bottom:
+        16px;
+
+}
+
+label {
+
+    display:
+        block;
+
+    margin-bottom:
+        7px;
+
+    font-size:
+        13px;
+
+    font-weight:
+        800;
+
+}
+
+input,
+textarea,
+select {
+
+    width:
+        100%;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        10px;
+
+    padding:
+        12px;
+
+    font:
+        inherit;
+
+    outline:
+        none;
+
+    background:
+        white;
+
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(37,99,235,.10);
+
+}
+
+textarea {
+
+    min-height:
+        110px;
+
+    resize:
+        vertical;
+
+}
+
+
+/* =========================================================
+   SMART INFO
+   ========================================================= */
+
+.smart-info {
+
+    padding:
+        14px;
+
+    border-radius:
+        12px;
+
+    background:
+        #f8fafc;
+
+    border:
+        1px solid var(--border);
+
+    color:
+        var(--muted);
+
+    font-size:
+        13px;
+
+    line-height:
+        1.5;
+
+}
+
+
+/* =========================================================
+   DYNAMIC ITEMS
+   ========================================================= */
+
+.dynamic-item {
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        14px;
+
+    padding:
+        16px;
+
+    margin-bottom:
+        12px;
+
+    background:
+        #f8fafc;
+
+}
+
+.item-header {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    margin-bottom:
+        12px;
+
+}
+
+.item-header strong {
+
+    font-size:
+        14px;
+
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.actions {
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        10px;
+
+    margin-top:
+        20px;
+
+}
+
+
+/* =========================================================
+   TEMPLATES
+   ========================================================= */
+
+.templates {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap:
+        10px;
+
+}
+
+.template {
+
+    border:
+        2px solid var(--border);
+
+    border-radius:
+        12px;
+
+    padding:
+        15px;
+
+    cursor:
+        pointer;
+
+    text-align:
+        center;
+
+    font-weight:
+        800;
+
+}
+
+.template.active {
+
+    border-color:
+        var(--primary);
+
+    background:
+        #eff6ff;
+
+}
+
+
+/* =========================================================
+   CV
+   ========================================================= */
+
+.cv-scroll {
+
+    overflow-x:
+        auto;
+
+    padding:
+        10px;
+
+}
+
+#cv {
+
+    width:
+        794px;
+
+    min-height:
+        1123px;
+
+    margin:
+        auto;
+
+    background:
+        white;
+
+    color:
+        #0f172a;
+
+    box-shadow:
+        0 15px 40px
+        rgba(0,0,0,.14);
+
+}
+
+
+/* =========================================================
+   CV HEADER
+   ========================================================= */
+
+.cv-header {
+
+    color:
+        white;
+
+    padding:
+        42px;
+
+    display:
+        flex;
+
+    gap:
+        25px;
+
+    align-items:
+        center;
+
+}
+
+.cv-photo {
+
+    width:
+        105px;
+
+    height:
+        105px;
+
+    border-radius:
+        50%;
+
+    object-fit:
+        cover;
+
+    border:
+        4px solid
+        rgba(255,255,255,.6);
+
+    display:
+        none;
+
+}
+
+.cv-header-content {
+    flex: 1;
+}
+
+.cv-name {
+
+    font-size:
+        36px;
+
+    font-weight:
+        950;
+
+    text-transform:
+        uppercase;
+
+    word-break:
+        break-word;
+
+}
+
+.cv-job {
+
+    margin-top:
+        7px;
+
+    font-size:
+        17px;
+
+    opacity:
+        .9;
+
+}
+
+
+/* =========================================================
+   CV BODY
+   ========================================================= */
+
+.cv-body {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        235px 1fr;
+
+    min-height:
+        1000px;
+
+}
+
+.cv-sidebar {
+
+    background:
+        #f1f5f9;
+
+    padding:
+        28px 22px;
+
+}
+
+.cv-main {
+
+    padding:
+        32px;
+
+}
+
+.cv-section {
+
+    margin-bottom:
+        28px;
+
+}
+
+.cv-section h3 {
+
+    margin:
+        0 0 12px;
+
+    padding-bottom:
+        7px;
+
+    border-bottom:
+        2px solid #dbeafe;
+
+    color:
+        #1e3a8a;
+
+    font-size:
+        15px;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .6px;
+
+}
+
+.cv-section p {
+
+    margin:
+        0;
+
+    color:
+        #334155;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.6;
+
+    white-space:
+        pre-line;
+
+}
+
+.contact-item {
+
+    margin-bottom:
+        12px;
+
+    font-size:
+        12px;
+
+    color:
+        #475569;
+
+    word-break:
+        break-word;
+
+}
+
+.contact-item strong {
+
+    display:
+        block;
+
+    color:
+        #0f172a;
+
+    margin-bottom:
+        3px;
+
+}
+
+.badges {
+
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        5px;
+
+}
+
+.badge {
+
+    padding:
+        5px 9px;
+
+    border-radius:
+        20px;
+
+    background:
+        #dbeafe;
+
+    color:
+        #1e40af;
+
+    font-size:
+        11px;
+
+}
+
+.cv-experience {
+
+    margin-bottom:
+        20px;
+
+}
+
+.cv-experience-title {
+
+    font-weight:
+        900;
+
+    font-size:
+        15px;
+
+}
+
+.cv-company {
+
+    color:
+        #2563eb;
+
+    font-size:
+        13px;
+
+    margin:
+        3px 0 7px;
+
+}
+
+.cv-date {
+
+    color:
+        #64748b;
+
+    font-size:
+        11px;
+
+    margin-bottom:
+        7px;
+
+}
+
+
+/* =========================================================
+   THEMES
+   ========================================================= */
+
+.theme-blue .cv-header {
+
+    background:
+        linear-gradient(
+            135deg,
+            #1e3a8a,
+            #2563eb
+        );
+
+}
+
+.theme-purple .cv-header {
+
+    background:
+        linear-gradient(
+            135deg,
+            #4c1d95,
+            #7c3aed
+        );
+
+}
+
+.theme-green .cv-header {
+
+    background:
+        linear-gradient(
+            135deg,
+            #14532d,
+            #16a34a
+        );
+
+}
+
+
+/* =========================================================
+   NOTICE
+   ========================================================= */
+
+.notice {
+
+    padding:
+        13px;
+
+    border-radius:
+        11px;
+
+    margin-top:
+        18px;
+
+    background:
+        #fefce8;
+
+    border:
+        1px solid #fde68a;
+
+    color:
+        #854d0e;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.5;
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width: 900px) {
+
+    .grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+}
+
+@media(max-width: 600px) {
+
+    .form-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+    .templates {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+    .cv-body {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+    .cv-sidebar {
+
+        order:
+            2;
+
+    }
+
+    .cv-main {
+
+        order:
+            1;
+
+    }
+
+    .cv-name {
+
+        font-size:
+            28px;
+
+    }
+
+    #cv {
+
+        width:
+            100%;
+
+    }
+
+}
+
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+
+    body * {
+
+        visibility:
+            hidden;
+
+    }
+
+    #cv,
+    #cv * {
+
+        visibility:
+            visible;
+
+    }
+
+    #cv {
+
+        position:
+            absolute;
+
+        left:
+            0;
+
+        top:
+            0;
+
+        width:
+            794px;
+
+        box-shadow:
+            none;
+
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>
+        🤖 CV Smart OCR
+    </h1>
+
+    <p>
+        Escanea tu documento, extrae tus datos
+        y crea un currículum profesional.
+    </p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- =====================================================
+     PASO 1
+====================================================== -->
+
+<section class="card">
+
+    <div class="card-title">
+
+        <span class="step">
+            1
+        </span>
+
+        <h2>
+            Escanear documento
+        </h2>
+
+    </div>
+
+
+    <div class="scanner">
+
+        <div class="scanner-icon">
+            📷
+        </div>
+
+        <h3>
+            Haz una foto de tu documento
+        </h3>
+
+        <p>
+            Para obtener mejores resultados,
+            utiliza buena iluminación y evita
+            reflejos sobre el documento.
+        </p>
+
+
+        <div class="camera-actions">
+
+            <label
+                for="cameraInput"
+                class="btn btn-primary"
+            >
+                📷 Abrir cámara
+            </label>
+
+            <input
+                id="cameraInput"
+                class="file-input"
+                type="file"
+                accept="image/*"
+                capture="environment"
+            >
+
+
+            <label
+                for="galleryInput"
+                class="btn btn-secondary"
+            >
+                🖼️ Seleccionar imagen
+            </label>
+
+            <input
+                id="galleryInput"
+                class="file-input"
+                type="file"
+                accept="image/*"
+            >
+
+        </div>
+
+
+        <div
+            id="fileName"
+            class="file-name"
+        >
+            Ningún archivo seleccionado
+        </div>
+
+
+        <img
+            id="documentPreview"
+            class="document-preview"
+            alt="Documento"
+        >
+
+    </div>
+
+
+    <div
+        id="progressArea"
+        class="progress-area"
+    >
+
+        <div class="progress">
+
+            <div
+                id="progressBar"
+                class="progress-bar"
+            ></div>
+
+        </div>
+
+        <div
+            id="ocrStatus"
+            class="status"
+        >
+            Preparando OCR...
+        </div>
+
+    </div>
+
+
+    <div class="actions">
+
+        <button
+            id="ocrButton"
+            class="btn btn-primary"
+        >
+            🔍 Analizar documento
+        </button>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            Texto reconocido
+        </label>
+
+        <textarea
+            id="ocrText"
+            placeholder="El texto detectado aparecerá aquí..."
+        ></textarea>
+
+    </div>
+
+
+    <div class="notice">
+
+        🔒 <strong>Privacidad:</strong>
+        el procesamiento OCR se ejecuta en el navegador.
+        No necesitas un servidor propio para analizar
+        la imagen.
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     FORMULARIO
+====================================================== -->
+
+<div class="grid">
+
+
+<section class="card">
+
+    <div class="card-title">
+
+        <span class="step">
+            2
+        </span>
+
+        <h2>
+            Datos personales
+        </h2>
+
+    </div>
+
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>
+                Nombre
+            </label>
+
+            <input
+                id="nombre"
+                placeholder="Juan"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Apellidos
+            </label>
+
+            <input
+                id="apellidos"
+                placeholder="García López"
+            >
+
+        </div>
+
+    </div>
+
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>
+                NIE / Documento
+            </label>
+
+            <input
+                id="nie"
+                placeholder="X1234567A"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Nacionalidad
+            </label>
+
+            <input
+                id="nacionalidad"
+                placeholder="Española"
+            >
+
+        </div>
+
+    </div>
+
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>
+                Teléfono
+            </label>
+
+            <input
+                id="telefono"
+                type="tel"
+                placeholder="+34 600 000 000"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Email
+            </label>
+
+            <input
+                id="email"
+                type="email"
+                placeholder="correo@email.com"
+            >
+
+        </div>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            Ciudad
+        </label>
+
+        <input
+            id="direccion"
+            placeholder="Logroño, La Rioja"
+        >
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            Profesión
+        </label>
+
+        <input
+            id="puesto"
+            placeholder="Administrativo"
+        >
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            Perfil profesional
+        </label>
+
+        <textarea
+            id="perfil"
+            placeholder="Describe tu experiencia profesional..."
+        ></textarea>
+
+    </div>
+
+
+    <div class="smart-info">
+
+        💡 <strong>Consejo:</strong>
+        no es necesario poner el NIE completo
+        en el CV. Por privacidad, esta aplicación
+        no lo muestra en la plantilla.
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     INFORMACIÓN PROFESIONAL
+====================================================== -->
+
+<section class="card">
+
+    <div class="card-title">
+
+        <span class="step">
+            3
+        </span>
+
+        <h2>
+            Información profesional
+        </h2>
+
+    </div>
+
+
+    <!-- EXPERIENCIA -->
+
+    <h3>
+        💼 Experiencia
+    </h3>
+
+    <div id="experiencias"></div>
+
+    <button
+        class="btn btn-secondary"
+        onclick="agregarExperiencia()"
+    >
+        + Añadir experiencia
+    </button>
+
+
+    <hr
+        style="
+            margin:25px 0;
+            border:0;
+            border-top:1px solid #e2e8f0;
+        "
+    >
+
+
+    <!-- FORMACIÓN -->
+
+    <h3>
+        🎓 Formación
+    </h3>
+
+    <div id="formaciones"></div>
+
+    <button
+        class="btn btn-secondary"
+        onclick="agregarFormacion()"
+    >
+        + Añadir formación
+    </button>
+
+
+    <hr
+        style="
+            margin:25px 0;
+            border:0;
+            border-top:1px solid #e2e8f0;
+        "
+    >
+
+
+    <div class="form-group">
+
+        <label>
+            🌎 Idiomas
+        </label>
+
+        <textarea
+            id="idiomas"
+            placeholder="Español: Nativo
+Inglés: B2
+Francés: A2"
+        ></textarea>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            ⭐ Habilidades
+        </label>
+
+        <textarea
+            id="habilidades"
+            placeholder="Excel, trabajo en equipo, atención al cliente..."
+        ></textarea>
+
+    </div>
+
+
+    <!-- FOTO -->
+
+    <div class="form-group">
+
+        <label>
+            👤 Foto para el CV
+        </label>
+
+        <input
+            id="photoInput"
+            type="file"
+            accept="image/*"
+        >
+
+    </div>
+
+</section>
+
+</div>
+
+
+<!-- =====================================================
+     PLANTILLA
+====================================================== -->
+
+<section class="card">
+
+    <div class="card-title">
+
+        <span class="step">
+            4
+        </span>
+
+        <h2>
+            Diseño del CV
+        </h2>
+
+    </div>
+
+
+    <div class="templates">
+
+        <div
+            class="template active"
+            data-theme="blue"
+            onclick="cambiarTema('blue', this)"
+        >
+            🔵 Azul
+        </div>
+
+
+        <div
+            class="template"
+            data-theme="purple"
+            onclick="cambiarTema('purple', this)"
+        >
+            🟣 Morado
+        </div>
+
+
+        <div
+            class="template"
+            data-theme="green"
+            onclick="cambiarTema('green', this)"
+        >
+            🟢 Verde
+        </div>
+
+    </div>
+
+
+    <div class="actions">
+
+        <button
+            class="btn btn-primary"
+            onclick="actualizarCV()"
+        >
+            🔄 Actualizar CV
+        </button>
+
+
+        <button
+            class="btn btn-success"
+            onclick="descargarPDF()"
+        >
+            📥 Descargar PDF
+        </button>
+
+
+        <button
+            class="btn btn-secondary"
+            onclick="window.print()"
+        >
+            🖨️ Imprimir
+        </button>
+
+
+        <button
+            class="btn btn-danger"
+            onclick="limpiarTodo()"
+        >
+            🗑️ Borrar todo
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PREVIEW
+====================================================== -->
+
+<section class="card">
+
+    <div class="card-title">
+
+        <span class="step">
+            5
+        </span>
+
+        <h2>
+            Vista previa
+        </h2>
+
+    </div>
+
+
+    <div class="cv-scroll">
+
+        <div
+            id="cv"
+            class="theme-blue"
+        >
+
+            <!-- HEADER -->
+
+            <div class="cv-header">
+
+                <img
+                    id="cvPhoto"
+                    class="cv-photo"
+                    alt="Foto"
+                >
+
+                <div class="cv-header-content">
+
+                    <div
+                        id="cvNombre"
+                        class="cv-name"
+                    >
+                        TU NOMBRE
+                    </div>
+
+                    <div
+                        id="cvPuesto"
+                        class="cv-job"
+                    >
+                        PROFESIONAL
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BODY -->
+
+            <div class="cv-body">
+
+
+                <!-- SIDEBAR -->
+
+                <aside class="cv-sidebar">
+
+
+                    <div class="cv-section">
+
+                        <h3>
+                            Contacto
+                        </h3>
+
+
+                        <div class="contact-item">
+
+                            <strong>
+                                Teléfono
+                            </strong>
+
+                            <span
+                                id="cvTelefono"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+
+                        <div class="contact-item">
+
+                            <strong>
+                                Email
+                            </strong>
+
+                            <span
+                                id="cvEmail"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+
+                        <div class="contact-item">
+
+                            <strong>
+                                Ubicación
+                            </strong>
+
+                            <span
+                                id="cvDireccion"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+
+                        <div class="contact-item">
+
+                            <strong>
+                                Nacionalidad
+                            </strong>
+
+                            <span
+                                id="cvNacionalidad"
+                            >
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="cv-section">
+
+                        <h3>
+                            Idiomas
+                        </h3>
+
+                        <p
+                            id="cvIdiomas"
+                        >
+                            —
+                        </p>
+
+                    </div>
+
+
+                    <div class="cv-section">
+
+                        <h3>
+                            Habilidades
+                        </h3>
+
+                        <div
+                            id="cvHabilidades"
+                            class="badges"
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+                </aside>
+
+
+                <!-- MAIN -->
+
+                <main class="cv-main">
+
+
+                    <div class="cv-section">
+
+                        <h3>
+                            Perfil
+                        </h3>
+
+                        <p
+                            id="cvPerfil"
+                        >
+                            Escribe tu perfil profesional.
+                        </p>
+
+                    </div>
+
+
+                    <div class="cv-section">
+
+                        <h3>
+                            Experiencia profesional
+                        </h3>
+
+                        <div
+                            id="cvExperiencias"
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+
+                    <div class="cv-section">
+
+                        <h3>
+                            Formación
+                        </h3>
+
+                        <div
+                            id="cvFormaciones"
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+
+                </main>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</div>
+
+
+<footer>
+
+    CV Smart OCR ·
+    Aplicación estática ·
+    OCR local en el navegador
+
+</footer>
+
+
+<script>
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let selectedDocument = null;
+
+let photoData = "";
+
+let currentTheme = "blue";
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const cameraInput =
+    document.getElementById(
+        "cameraInput"
+    );
+
+const galleryInput =
+    document.getElementById(
+        "galleryInput"
+    );
+
+const photoInput =
+    document.getElementById(
+        "photoInput"
+    );
+
+const documentPreview =
+    document.getElementById(
+        "documentPreview"
+    );
+
+const fileName =
+    document.getElementById(
+        "fileName"
+    );
+
+const ocrButton =
+    document.getElementById(
+        "ocrButton"
+    );
+
+
+/* =========================================================
+   ARCHIVO CÁMARA
+========================================================= */
+
+cameraInput.addEventListener(
+    "change",
+    async function() {
+
+        if (!this.files.length)
+            return;
+
+        seleccionarDocumento(
+            this.files[0]
+        );
+
+        await ejecutarOCR(
+            this.files[0]
+        );
+
+    }
+);
+
+
+/* =========================================================
+   GALERÍA
+========================================================= */
+
+galleryInput.addEventListener(
+    "change",
+    function() {
+
+        if (!this.files.length)
+            return;
+
+        seleccionarDocumento(
+            this.files[0]
+        );
+
+    }
+);
+
+
+/* =========================================================
+   SELECCIONAR DOCUMENTO
+========================================================= */
+
+function seleccionarDocumento(file) {
+
+    selectedDocument =
+        file;
+
+    fileName.textContent =
+        "📄 " + file.name;
+
+
+    if (
+        file.type.startsWith(
+            "image/"
+        )
+    ) {
+
+        const url =
+            URL.createObjectURL(
+                file
+            );
+
+        documentPreview.src =
+            url;
+
+        documentPreview.style.display =
+            "block";
+
+    }
+
+}
+
+
+/* =========================================================
+   BOTÓN OCR
+========================================================= */
+
+ocrButton.addEventListener(
+    "click",
+    async function() {
+
+        if (!selectedDocument) {
+
+            alert(
+                "Primero haz una foto o selecciona una imagen."
+            );
+
+            return;
+
+        }
+
+        await ejecutarOCR(
+            selectedDocument
+        );
+
+    }
+);
+
+
+/* =========================================================
+   OCR
+========================================================= */
+
+async function ejecutarOCR(file) {
+
+    if (
+        !file.type.startsWith(
+            "image/"
+        )
+    ) {
+
+        alert(
+            "Selecciona una imagen JPG o PNG."
+        );
+
+        return;
+
+    }
+
+
+    const progressArea =
+        document.getElementById(
+            "progressArea"
+        );
+
+    const progressBar =
+        document.getElementById(
+            "progressBar"
+        );
+
+    const status =
+        document.getElementById(
+            "ocrStatus"
+        );
+
+
+    progressArea.style.display =
+        "block";
+
+    progressBar.style.width =
+        "0%";
+
+    ocrButton.disabled =
+        true;
+
+
+    try {
+
+        status.textContent =
+            "🔍 Preparando OCR...";
+
+
+        /*
+         * Tesseract ejecuta
+         * el reconocimiento en
+         * el navegador.
+         */
+
+        const result =
+            await Tesseract.recognize(
+                file,
+                "spa+eng",
+                {
+
+                    logger:
+                        info => {
+
+                            if (
+                                typeof info.progress
+                                === "number"
+                            ) {
+
+                                const percent =
+                                    Math.round(
+                                        info.progress
+                                        * 100
+                                    );
+
+                                progressBar.style.width =
+                                    percent + "%";
+
+                                status.textContent =
+                                    "🔍 Analizando: "
+                                    + percent
+                                    + "%";
+
+                            }
+
+                        }
+
+                }
+            );
+
+
+        const text =
+            result.data.text;
+
+
+        document.getElementById(
+            "ocrText"
+        ).value =
+            text;
+
+
+        progressBar.style.width =
+            "100%";
+
+
+        status.textContent =
+            "✅ Documento analizado";
+
+
+        /*
+         * Inteligencia de extracción
+         */
+
+        analizarTexto(
+            text
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            error
+        );
+
+        status.textContent =
+            "❌ Error de OCR";
+
+        alert(
+            "No se pudo leer el documento."
+        );
+
+    } finally {
+
+        ocrButton.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   ANALIZADOR INTELIGENTE
+========================================================= */
+
+function analizarTexto(texto) {
+
+    const original =
+        texto || "";
+
+    const mayus =
+        original.toUpperCase();
+
+
+    /*
+     * NIE
+     */
+
+    const nieMatch =
+        mayus.match(
+            /\b[XYZ]\s?\d{7}\s?[A-Z]\b/
+        );
+
+
+    if (nieMatch) {
+
+        const nie =
+            nieMatch[0]
+                .replace(
+                    /\s/g,
+                    ""
+                );
+
+        document.getElementById(
+            "nie"
+        ).value =
+            nie;
+
+    }
+
+
+    /*
+     * Nacionalidad
+     */
+
+    const nacionalidad =
+        buscarCampo(
+            original,
+            [
+                "NACIONALIDAD",
+                "NATIONALITY"
+            ]
+        );
+
+
+    if (nacionalidad) {
+
+        document.getElementById(
+            "nacionalidad"
+        ).value =
+            nacionalidad;
+
+    }
+
+
+    /*
+     * Nombre y apellidos
+     *
+     * Intentamos identificar
+     * líneas que parecen nombres.
+     */
+
+    const lineas =
+        original
+            .split(/\r?\n/)
+            .map(
+                x => x.trim()
+            )
+            .filter(
+                x =>
+                    x.length > 3
+            );
+
+
+    const candidatos =
+        lineas.filter(
+            linea => {
+
+                const limpio =
+                    linea
+                        .replace(
+                            /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g,
+                            ""
+                        )
+                        .trim();
+
+
+                const palabras =
+                    limpio
+                        .split(/\s+/);
+
+
+                /*
+                 * Evitar etiquetas
+                 */
+
+                const palabrasProhibidas = [
+                    "NOMBRE",
+                    "APELLIDOS",
+                    "NACIONALIDAD",
+                    "NIE",
+                    "DOCUMENTO",
+                    "FECHA",
+                    "NACIMIENTO",
+                    "EXPEDICION",
+                    "CADUCIDAD"
+                ];
+
+
+                const contieneEtiqueta =
+                    palabrasProhibidas.some(
+                        palabra =>
+                            limpio
+                                .toUpperCase()
+                                .includes(
+                                    palabra
+                                )
+                    );
+
+
+                return (
+                    !contieneEtiqueta &&
+                    palabras.length >= 2 &&
+                    palabras.length <= 5 &&
+                    limpio.length >= 6
+                );
+
+            }
+        );
+
+
+    if (
+        candidatos.length
+    ) {
+
+        const nombreActual =
+            document.getElementById(
+                "nombre"
+            ).value.trim();
+
+
+        if (!nombreActual) {
+
+            const partes =
+                candidatos[0]
+                    .split(/\s+/);
+
+
+            document.getElementById(
+                "nombre"
+            ).value =
+                partes.shift() || "";
+
+
+            document.getElementById(
+                "apellidos"
+            ).value =
+                partes.join(" ");
+
+        }
+
+    }
+
+
+    actualizarCV();
+
+}
+
+
+/* =========================================================
+   BUSCAR CAMPO
+========================================================= */
+
+function buscarCampo(
+    texto,
+    etiquetas
+) {
+
+    const lineas =
+        texto.split(
+            /\r?\n/
+        );
+
+
+    for (
+        const linea of lineas
+    ) {
+
+        const mayus =
+            linea.toUpperCase();
+
+
+        for (
+            const etiqueta
+            of etiquetas
+        ) {
+
+            if (
+                mayus.includes(
+                    etiqueta
+                )
+            ) {
+
+                const partes =
+                    linea.split(
+                        /[:\-]/
+                    );
+
+
+                if (
+                    partes.length > 1
+                ) {
+
+                    return partes
+                        .slice(1)
+                        .join(":")
+                        .trim();
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================================
+   EXPERIENCIA
+========================================================= */
+
+function agregarExperiencia(
+    datos = {}
+) {
+
+    const container =
+        document.getElementById(
+            "experiencias"
+        );
+
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+    item.className =
+        "dynamic-item";
+
+
+    item.innerHTML = `
+
+        <div class="item-header">
+
+            <strong>
+                Experiencia profesional
+            </strong>
+
+            <button
+                type="button"
+                class="btn btn-danger"
+                onclick="this.closest('.dynamic-item').remove(); actualizarCV();"
+            >
+                Eliminar
+            </button>
+
+        </div>
+
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label>
+                    Puesto
+                </label>
+
+                <input
+                    class="exp-puesto"
+                    value="${escapeHTML(datos.puesto || "")}"
+                    placeholder="Administrativo"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Empresa
+                </label>
+
+                <input
+                    class="exp-empresa"
+                    value="${escapeHTML(datos.empresa || "")}"
+                    placeholder="Empresa S.L."
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label>
+                    Fecha inicio
+                </label>
+
+                <input
+                    class="exp-inicio"
+                    value="${escapeHTML(datos.inicio || "")}"
+                    placeholder="2022"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Fecha fin
+                </label>
+
+                <input
+                    class="exp-fin"
+                    value="${escapeHTML(datos.fin || "")}"
+                    placeholder="Actualidad"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Funciones
+            </label>
+
+            <textarea
+                class="exp-descripcion"
+                placeholder="Describe tus funciones..."
+            >${escapeHTML(datos.descripcion || "")}</textarea>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(
+        item
+    );
+
+
+    item
+        .querySelectorAll(
+            "input, textarea"
+        )
+        .forEach(
+            element => {
+
+                element.addEventListener(
+                    "input",
+                    actualizarCV
+                );
+
+            }
+        );
+
+
+    actualizarCV();
+
+}
+
+
+/* =========================================================
+   FORMACIÓN
+========================================================= */
+
+function agregarFormacion(
+    datos = {}
+) {
+
+    const container =
+        document.getElementById(
+            "formaciones"
+        );
+
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+    item.className =
+        "dynamic-item";
+
+
+    item.innerHTML = `
+
+        <div class="item-header">
+
+            <strong>
+                Formación
+            </strong>
+
+            <button
+                type="button"
+                class="btn btn-danger"
+                onclick="this.closest('.dynamic-item').remove(); actualizarCV();"
+            >
+                Eliminar
+            </button>
+
+        </div>
+
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label>
+                    Título
+                </label>
+
+                <input
+                    class="form-titulo"
+                    value="${escapeHTML(datos.titulo || "")}"
+                    placeholder="Grado / Curso"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Centro
+                </label>
+
+                <input
+                    class="form-centro"
+                    value="${escapeHTML(datos.centro || "")}"
+                    placeholder="Centro de estudios"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Año
+            </label>
+
+            <input
+                class="form-ano"
+                value="${escapeHTML(datos.ano || "")}"
+                placeholder="2024"
+            >
+
+        </div>
+
+    `;
+
+
+    container.appendChild(
+        item
+    );
+
+
+    item
+        .querySelectorAll(
+            "input, textarea"
+        )
+        .forEach(
+            element => {
+
+                element.addEventListener(
+                    "input",
+                    actualizarCV
+                );
+
+            }
+        );
+
+
+    actualizarCV();
+
+}
+
+
+/* =========================================================
+   FOTO
+========================================================= */
+
+photoInput.addEventListener(
+    "change",
+    function() {
+
+        if (!this.files.length)
+            return;
+
+
+        const file =
+            this.files[0];
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            event => {
+
+                photoData =
+                    event.target.result;
+
+
+                const photo =
+                    document.getElementById(
+                        "cvPhoto"
+                    );
+
+
+                photo.src =
+                    photoData;
+
+
+                photo.style.display =
+                    "block";
+
+
+                guardarDatos();
+
+            };
+
+
+        reader.readAsDataURL(
+            file
+        );
+
+    }
+);
+
+
+/* =========================================================
+   VALOR
+========================================================= */
+
+function valor(id) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    return element
+        ? element.value.trim()
+        : "";
+
+}
+
+
+/* =========================================================
+   ACTUALIZAR CV
+========================================================= */
+
+function actualizarCV() {
+
+    const nombre =
+        valor("nombre");
+
+
+    const apellidos =
+        valor("apellidos");
+
+
+    document.getElementById(
+        "cvNombre"
+    ).textContent =
+        (
+            `${nombre} ${apellidos}`
+        )
+            .trim()
+            .toUpperCase()
+        ||
+        "TU NOMBRE";
+
+
+    document.getElementById(
+        "cvPuesto"
+    ).textContent =
+        valor("puesto")
+        ||
+        "PROFESIONAL";
+
+
+    document.getElementById(
+        "cvTelefono"
+    ).textContent =
+        valor("telefono")
+        ||
+        "—";
+
+
+    document.getElementById(
+        "cvEmail"
+    ).textContent =
+        valor("email")
+        ||
+        "—";
+
+
+    document.getElementById(
+        "cvDireccion"
+    ).textContent =
+        valor("direccion")
+        ||
+        "—";
+
+
+    document.getElementById(
+        "cvNacionalidad"
+    ).textContent =
+        valor("nacionalidad")
+        ||
+        "—";
+
+
+    document.getElementById(
+        "cvPerfil"
+    ).textContent =
+        valor("perfil")
+        ||
+        "Escribe tu perfil profesional.";
+
+
+    document.getElementById(
+        "cvIdiomas"
+    ).textContent =
+        valor("idiomas")
+        ||
+        "—";
+
+
+    actualizarExperiencias();
+
+    actualizarFormaciones();
+
+    actualizarHabilidades();
+
+    guardarDatos();
+
+}
+
+
+/* =========================================================
+   EXPERIENCIAS → CV
+========================================================= */
+
+function actualizarExperiencias() {
+
+    const container =
+        document.getElementById(
+            "cvExperiencias"
+        );
+
+
+    const items =
+        document.querySelectorAll(
+            "#experiencias .dynamic-item"
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    if (!items.length) {
+
+        container.textContent =
+            "Añade tu experiencia profesional.";
+
+        return;
+
+    }
+
+
+    items.forEach(
+        item => {
+
+            const puesto =
+                item
+                    .querySelector(
+                        ".exp-puesto"
+                    )
+                    .value
+                    .trim();
+
+
+            const empresa =
+                item
+                    .querySelector(
+                        ".exp-empresa"
+                    )
+                    .value
+                    .trim();
+
+
+            const inicio =
+                item
+                    .querySelector(
+                        ".exp-inicio"
+                    )
+                    .value
+                    .trim();
+
+
+            const fin =
+                item
+                    .querySelector(
+                        ".exp-fin"
+                    )
+                    .value
+                    .trim();
+
+
+            const descripcion =
+                item
+                    .querySelector(
+                        ".exp-descripcion"
+                    )
+                    .value
+                    .trim();
+
+
+            const wrapper =
+                document.createElement(
+                    "div"
+                );
+
+
+            wrapper.className =
+                "cv-experience";
+
+
+            wrapper.innerHTML = `
+
+                <div class="cv-experience-title">
+                    ${escapeHTML(
+                        puesto ||
+                        "Puesto profesional"
+                    )}
+                </div>
+
+                <div class="cv-company">
+                    ${escapeHTML(
+                        empresa ||
+                        "Empresa"
+                    )}
+                </div>
+
+                <div class="cv-date">
+                    ${escapeHTML(
+                        inicio
+                        || ""
+                    )}
+                    ${inicio || fin ? " — " : ""}
+                    ${escapeHTML(
+                        fin
+                        || ""
+                    )}
+                </div>
+
+                <div class="cv-section">
+                    <p>
+                        ${escapeHTML(
+                            descripcion
+                            ||
+                            "Descripción de funciones."
+                        )}
+                    </p>
+                </div>
+
+            `;
+
+
+            container.appendChild(
+                wrapper
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   FORMACIÓN → CV
+========================================================= */
+
+function actualizarFormaciones() {
+
+    const container =
+        document.getElementById(
+            "cvFormaciones"
+        );
+
+
+    const items =
+        document.querySelectorAll(
+            "#formaciones .dynamic-item"
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    if (!items.length) {
+
+        container.textContent =
+            "Añade tu formación.";
+
+        return;
+
+    }
+
+
+    items.forEach(
+        item => {
+
+            const titulo =
+                item
+                    .querySelector(
+                        ".form-titulo"
+                    )
+                    .value
+                    .trim();
+
+
+            const centro =
+                item
+                    .querySelector(
+                        ".form-centro"
+                    )
+                    .value
+                    .trim();
+
+
+            const ano =
+                item
+                    .querySelector(
+                        ".form-ano"
+                    )
+                    .value
+                    .trim();
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "cv-experience";
+
+
+            div.innerHTML = `
+
+                <div class="cv-experience-title">
+                    ${escapeHTML(
+                        titulo ||
+                        "Formación"
+                    )}
+                </div>
+
+                <div class="cv-company">
+                    ${escapeHTML(
+                        centro ||
+                        ""
+                    )}
+                </div>
+
+                <div class="cv-date">
+                    ${escapeHTML(
+                        ano ||
+                        ""
+                    )}
+                </div>
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   HABILIDADES
+========================================================= */
+
+function actualizarHabilidades() {
+
+    const container =
+        document.getElementById(
+            "cvHabilidades"
+        );
+
+
+    const habilidades =
+        valor(
+            "habilidades"
+        )
+            .split(
+                /[,;\n]/
+            )
+            .map(
+                x =>
+                    x.trim()
+            )
+            .filter(
+                Boolean
+            );
+
+
+    container.innerHTML =
+        "";
+
+
+    if (!habilidades.length) {
+
+        container.textContent =
+            "—";
+
+        return;
+
+    }
+
+
+    habilidades.forEach(
+        habilidad => {
+
+            const span =
+                document.createElement(
+                    "span"
+                );
+
+
+            span.className =
+                "badge";
+
+
+            span.textContent =
+                habilidad;
+
+
+            container.appendChild(
+                span
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   TEMAS
+========================================================= */
+
+function cambiarTema(
+    tema,
+    elemento
+) {
+
+    currentTheme =
+        tema;
+
+
+    const cv =
+        document.getElementById(
+            "cv"
+        );
+
+
+    cv.classList.remove(
+        "theme-blue",
+        "theme-purple",
+        "theme-green"
+    );
+
+
+    cv.classList.add(
+        "theme-" + tema
+    );
+
+
+    document
+        .querySelectorAll(
+            ".template"
+        )
+        .forEach(
+            x =>
+                x.classList.remove(
+                    "active"
+                )
+        );
+
+
+    elemento.classList.add(
+        "active"
+    );
+
+
+    guardarDatos();
+
+}
+
+
+/* =========================================================
+   ESCAPAR HTML
+========================================================= */
+
+function escapeHTML(
+    texto
+) {
+
+    return String(
+        texto || ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   RECOGER EXPERIENCIAS
+========================================================= */
+
+function obtenerExperiencias() {
+
+    return Array
+        .from(
+            document.querySelectorAll(
+                "#experiencias .dynamic-item"
+            )
+        )
+        .map(
+            item => ({
+
+                puesto:
+                    item.querySelector(
+                        ".exp-puesto"
+                    ).value,
+
+                empresa:
+                    item.querySelector(
+                        ".exp-empresa"
+                    ).value,
+
+                inicio:
+                    item.querySelector(
+                        ".exp-inicio"
+                    ).value,
+
+                fin:
+                    item.querySelector(
+                        ".exp-fin"
+                    ).value,
+
+                descripcion:
+                    item.querySelector(
+                        ".exp-descripcion"
+                    ).value
+
+            })
+        );
+
+}
+
+
+/* =========================================================
+   RECOGER FORMACIÓN
+========================================================= */
+
+function obtenerFormaciones() {
+
+    return Array
+        .from(
+            document.querySelectorAll(
+                "#formaciones .dynamic-item"
+            )
+        )
+        .map(
+            item => ({
+
+                titulo:
+                    item.querySelector(
+                        ".form-titulo"
+                    ).value,
+
+                centro:
+                    item.querySelector(
+                        ".form-centro"
+                    ).value,
+
+                ano:
+                    item.querySelector(
+                        ".form-ano"
+                    ).value
+
+            })
+        );
+
+}
+
+
+/* =========================================================
+   GUARDAR DATOS
+========================================================= */
+
+function guardarDatos() {
+
+    const datos = {
+
+        nombre:
+            valor("nombre"),
+
+        apellidos:
+            valor("apellidos"),
+
+        nie:
+            valor("nie"),
+
+        nacionalidad:
+            valor("nacionalidad"),
+
+        telefono:
+            valor("telefono"),
+
+        email:
+            valor("email"),
+
+        direccion:
+            valor("direccion"),
+
+        puesto:
+            valor("puesto"),
+
+        perfil:
+            valor("perfil"),
+
+        idiomas:
+            valor("idiomas"),
+
+        habilidades:
+            valor("habilidades"),
+
+        experiencias:
+            obtenerExperiencias(),
+
+        formaciones:
+            obtenerFormaciones(),
+
+        photo:
+            photoData,
+
+        theme:
+            currentTheme
+
+    };
+
+
+    localStorage.setItem(
+        "cvSmartOCR",
+        JSON.stringify(
+            datos
+        )
+    );
+
+}
+
+
+/* =========================================================
+   CARGAR DATOS
+========================================================= */
+
+function cargarDatos() {
+
+    const guardado =
+        localStorage.getItem(
+            "cvSmartOCR"
+        );
+
+
+    if (!guardado) {
+
+        /*
+         * Crear una experiencia
+         * vacía inicial.
+         */
+
+        agregarExperiencia();
+
+        agregarFormacion();
+
+        return;
+
+    }
+
+
+    try {
+
+        const datos =
+            JSON.parse(
+                guardado
+            );
+
+
+        const campos = [
+
+            "nombre",
+            "apellidos",
+            "nie",
+            "nacionalidad",
+            "telefono",
+            "email",
+            "direccion",
+            "puesto",
+            "perfil",
+            "idiomas",
+            "habilidades"
+
+        ];
+
+
+        campos.forEach(
+            id => {
+
+                if (
+                    datos[id] !==
+                    undefined
+                ) {
+
+                    document.getElementById(
+                        id
+                    ).value =
+                        datos[id];
+
+                }
+
+            }
+        );
+
+
+        /*
+         * Experiencias
+         */
+
+        if (
+            Array.isArray(
+                datos.experiencias
+            )
+        ) {
+
+            datos.experiencias
+                .forEach(
+                    experiencia =>
+                        agregarExperiencia(
+                            experiencia
+                        )
+                );
+
+        }
+
+
+        /*
+         * Formaciones
+         */
+
+        if (
+            Array.isArray(
+                datos.formaciones
+            )
+        ) {
+
+            datos.formaciones
+                .forEach(
+                    formacion =>
+                        agregarFormacion(
+                            formacion
+                        )
+                );
+
+        }
+
+
+        /*
+         * Foto
+         */
+
+        if (
+            datos.photo
+        ) {
+
+            photoData =
+                datos.photo;
+
+
+            const photo =
+                document.getElementById(
+                    "cvPhoto"
+                );
+
+
+            photo.src =
+                photoData;
+
+
+            photo.style.display =
+                "block";
+
+        }
+
+
+        /*
+         * Tema
+         */
+
+        if (
+            datos.theme
+        ) {
+
+            currentTheme =
+                datos.theme;
+
+
+            const cv =
+                document.getElementById(
+                    "cv"
+                );
+
+
+            cv.classList.remove(
+                "theme-blue",
+                "theme-purple",
+                "theme-green"
+            );
+
+
+            cv.classList.add(
+                "theme-" +
+                currentTheme
+            );
+
+
+            document
+                .querySelectorAll(
+                    ".template"
+                )
+                .forEach(
+                    element => {
+
+                        element.classList.toggle(
+                            "active",
+                            element.dataset.theme
+                            ===
+                            currentTheme
+                        );
+
+                    }
+                );
+
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "Error cargando datos",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PDF
+========================================================= */
+
+async function descargarPDF() {
+
+    actualizarCV();
+
+
+    const cv =
+        document.getElementById(
+            "cv"
+        );
+
+
+    try {
+
+        const canvas =
+            await html2canvas(
+                cv,
+                {
+
+                    scale: 2,
+
+                    useCORS:
+                        true,
+
+                    backgroundColor:
+                        "#ffffff"
+
+                }
+            );
+
+
+        const image =
+            canvas.toDataURL(
+                "image/png"
+            );
+
+
+        const {
+            jsPDF
+        } =
+            window.jspdf;
+
+
+        const pdf =
+            new jsPDF(
+                {
+
+                    orientation:
+                        "portrait",
+
+                    unit:
+                        "mm",
+
+                    format:
+                        "a4"
+
+                }
+            );
+
+
+        const pageWidth =
+            pdf.internal.pageSize
+                .getWidth();
+
+
+        const pageHeight =
+            pdf.internal.pageSize
+                .getHeight();
+
+
+        const ratio =
+            Math.min(
+                pageWidth /
+                    canvas.width,
+
+                pageHeight /
+                    canvas.height
+            );
+
+
+        const width =
+            canvas.width *
+            ratio;
+
+
+        const height =
+            canvas.height *
+            ratio;
+
+
+        const x =
+            (
+                pageWidth -
+                width
+            ) / 2;
+
+
+        pdf.addImage(
+            image,
+            "PNG",
+            x,
+            0,
+            width,
+            height
+        );
+
+
+        const nombre =
+            valor(
+                "nombre"
+            ) ||
+            "CV";
+
+
+        pdf.save(
+            "CV-" +
+            nombre
+                .replace(
+                    /\s+/g,
+                    "-"
+                ) +
+            ".pdf"
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            "No se pudo crear el PDF."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   BORRAR
+========================================================= */
+
+function limpiarTodo() {
+
+    if (
+        !confirm(
+            "¿Quieres borrar todos los datos y empezar de nuevo?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    localStorage.removeItem(
+        "cvSmartOCR"
+    );
+
+
+    location.reload();
+
+}
+
+
+/* =========================================================
+   AUTOGUARDADO
+========================================================= */
+
+document
+    .querySelectorAll(
+        "input, textarea"
+    )
+    .forEach(
+        element => {
+
+            element.addEventListener(
+                "input",
+                () => {
+
+                    actualizarCV();
+
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   INICIAR
+========================================================= */
+
+cargarDatos();
+
+actualizarCV();
+
+</script>
+
+</body>
+</html>
