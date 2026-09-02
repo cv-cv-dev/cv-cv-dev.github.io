@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CV OCR - Crea tu Currículum</title>
+
+<!-- OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary: #0f172a;
+    --background: #f1f5f9;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --muted: #64748b;
+    --success: #16a34a;
+    --danger: #dc2626;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background: var(--background);
+    color: var(--secondary);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+    background:
+        linear-gradient(
+            135deg,
+            #1e3a8a,
+            #2563eb,
+            #3b82f6
+        );
+
+    color: white;
+    padding: 42px 20px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: clamp(28px, 5vw, 42px);
+}
+
+header p {
+    margin: 10px 0 0;
+    opacity: .9;
+}
+
+/* =========================
+   CONTAINER
+========================= */
+
+.container {
+    width: min(1250px, 94%);
+    margin: 30px auto 60px;
+}
+
+.main-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(320px, 1fr)
+        minmax(320px, 1fr);
+
+    gap: 24px;
+}
+
+.card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow:
+        0 12px 35px rgba(15, 23, 42, .07);
+}
+
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* =========================
+   STEPS
+========================= */
+
+.step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 50%;
+
+    background: var(--primary);
+    color: white;
+
+    margin-right: 8px;
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+/* =========================
+   CAMERA
+========================= */
+
+.camera-box {
+    border: 2px dashed #93c5fd;
+    background: #eff6ff;
+
+    border-radius: 18px;
+
+    padding: 30px 20px;
+
+    text-align: center;
+}
+
+.camera-icon {
+    font-size: 55px;
+    margin-bottom: 12px;
+}
+
+.camera-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.btn {
+    border: 0;
+    border-radius: 10px;
+
+    padding: 12px 18px;
+
+    font-weight: 700;
+    font-size: 14px;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s,
+        background .15s,
+        opacity .15s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+/* =========================
+   FILE INPUT
+========================= */
+
+.file-input {
+    display: none;
+}
+
+.file-name {
+    margin-top: 15px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+    word-break: break-word;
+}
+
+/* =========================
+   PREVIEW IMAGE
+========================= */
+
+.image-preview {
+    width: 100%;
+    max-height: 250px;
+
+    object-fit: contain;
+
+    border-radius: 12px;
+
+    margin-top: 20px;
+
+    background: #e2e8f0;
+
+    display: none;
+}
+
+/* =========================
+   PROGRESS
+========================= */
+
+.progress-wrapper {
+    display: none;
+
+    margin-top: 20px;
+}
+
+.progress {
+    width: 100%;
+    height: 12px;
+
+    background: #e2e8f0;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #60a5fa
+        );
+
+    transition: width .2s;
+}
+
+.status {
+    margin-top: 8px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+label {
+    display: block;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    margin-bottom: 7px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    font: inherit;
+
+    outline: none;
+
+    background: white;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(37, 99, 235, .1);
+}
+
+textarea {
+    min-height: 100px;
+
+    resize: vertical;
+}
+
+.form-grid {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 12px;
+}
+
+/* =========================
+   NOTICE
+========================= */
+
+.notice {
+    margin-top: 18px;
+
+    padding: 13px;
+
+    border-radius: 10px;
+
+    background: #fefce8;
+
+    border: 1px solid #fde68a;
+
+    color: #854d0e;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+/* =========================
+   CV
+========================= */
+
+.preview-card {
+    margin-top: 25px;
+}
+
+.cv-wrapper {
+    overflow-x: auto;
+
+    padding: 15px 0;
+}
+
+#cv {
+    width: 794px;
+    min-height: 1123px;
+
+    margin: auto;
+
+    background: white;
+
+    color: #0f172a;
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.15);
+}
+
+/* CV HEADER */
+
+.cv-header {
+    background:
+        linear-gradient(
+            135deg,
+            #1e3a8a,
+            #2563eb
+        );
+
+    color: white;
+
+    padding: 45px;
+}
+
+.cv-name {
+    font-size: 36px;
+
+    font-weight: 900;
+
+    text-transform: uppercase;
+
+    word-break: break-word;
+}
+
+.cv-job {
+    margin-top: 7px;
+
+    font-size: 17px;
+
+    opacity: .9;
+}
+
+/* CV BODY */
+
+.cv-body {
+    display: grid;
+
+    grid-template-columns:
+        235px 1fr;
+
+    min-height: 1000px;
+}
+
+.cv-sidebar {
+    background: #f1f5f9;
+
+    padding: 28px 22px;
+}
+
+.cv-main {
+    padding: 32px;
+}
+
+.cv-section {
+    margin-bottom: 28px;
+}
+
+.cv-section h3 {
+    margin: 0 0 12px;
+
+    padding-bottom: 7px;
+
+    border-bottom:
+        2px solid #dbeafe;
+
+    color: #1e3a8a;
+
+    font-size: 15px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .6px;
+}
+
+.cv-section p {
+    margin: 0;
+
+    color: #334155;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    white-space: pre-line;
+}
+
+.contact-item {
+    margin-bottom: 12px;
+
+    font-size: 12px;
+
+    color: #475569;
+
+    word-break: break-word;
+}
+
+.contact-item strong {
+    display: block;
+
+    color: #0f172a;
+
+    margin-bottom: 3px;
+}
+
+.badges {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+}
+
+.badge {
+    display: inline-block;
+
+    background: #dbeafe;
+
+    color: #1e40af;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+}
+
+.empty {
+    color: #94a3b8;
+}
+
+.actions {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    text-align: center;
+
+    padding: 30px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width: 850px) {
+
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media(max-width: 600px) {
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cv-body {
+        grid-template-columns: 1fr;
+    }
+
+    .cv-sidebar {
+        order: 2;
+    }
+
+    .cv-main {
+        order: 1;
+    }
+
+    .cv-name {
+        font-size: 28px;
+    }
+
+    #cv {
+        width: 100%;
+    }
+
+}
+
+/* =========================
+   PRINT
+========================= */
+
+@media print {
+
+    body * {
+        visibility: hidden;
+    }
+
+    #cv,
+    #cv * {
+        visibility: visible;
+    }
+
+    #cv {
+        position: absolute;
+
+        left: 0;
+        top: 0;
+
+        width: 794px;
+
+        box-shadow: none;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <h1>📄 CV Smart OCR</h1>
+
+    <p>
+        Haz una foto de tu documento y crea tu currículum
+    </p>
+
+</header>
+
+
+<div class="container">
+
+    <!-- =====================
+         OCR
+    ====================== -->
+
+    <section class="card">
+
+        <h2>
+            <span class="step">1</span>
+            Escanea tu documento
+        </h2>
+
+        <div class="camera-box">
+
+            <div class="camera-icon">
+                📷
+            </div>
+
+            <strong>
+                Haz una foto de tu NIE
+            </strong>
+
+            <p style="color:#64748b;">
+                Coloca el documento con buena luz
+                y evita reflejos.
+            </p>
+
+
+            <div class="camera-buttons">
+
+                <!-- CÁMARA -->
+                <label
+                    for="cameraInput"
+                    class="btn btn-primary"
+                >
+                    📷 Hacer foto
+                </label>
+
+                <input
+                    id="cameraInput"
+                    class="file-input"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                >
+
+
+                <!-- GALERÍA -->
+                <label
+                    for="galleryInput"
+                    class="btn btn-secondary"
+                >
+                    🖼️ Galería
+                </label>
+
+                <input
+                    id="galleryInput"
+                    class="file-input"
+                    type="file"
+                    accept="image/*"
+                >
+
+            </div>
+
+
+            <div
+                id="fileName"
+                class="file-name"
+            >
+                Ningún documento seleccionado
+            </div>
+
+
+            <img
+                id="imagePreview"
+                class="image-preview"
+                alt="Vista previa del documento"
+            >
+
+        </div>
+
+
+        <div
+            id="progressWrapper"
+            class="progress-wrapper"
+        >
+
+            <div class="progress">
+
+                <div
+                    id="progressBar"
+                    class="progress-bar"
+                ></div>
+
+            </div>
+
+            <div
+                id="ocrStatus"
+                class="status"
+            >
+                Preparando OCR...
+            </div>
+
+        </div>
+
+
+        <div class="actions">
+
+            <button
+                id="ocrButton"
+                class="btn btn-primary"
+            >
+                🔍 Leer documento
+            </button>
+
+        </div>
+
+
+        <div class="form-group" style="margin-top:20px;">
+
+            <label>
+                Texto detectado
+            </label>
+
+            <textarea
+                id="ocrText"
+                placeholder="Aquí aparecerá el texto detectado..."
+            ></textarea>
+
+        </div>
+
+
+        <div class="notice">
+
+            🔒 <strong>Privacidad:</strong>
+            el OCR se ejecuta directamente
+            en tu navegador. Esta aplicación
+            no necesita un servidor propio
+            para procesar la imagen.
+
+        </div>
+
+    </section>
+
+
+    <div class="main-grid" style="margin-top:25px;">
+
+        <!-- =====================
+             FORMULARIO
+        ====================== -->
+
+        <section class="card">
+
+            <h2>
+                <span class="step">2</span>
+                Información del CV
+            </h2>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Nombre
+                    </label>
+
+                    <input
+                        id="nombre"
+                        placeholder="Juan"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Apellidos
+                    </label>
+
+                    <input
+                        id="apellidos"
+                        placeholder="García López"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        NIE
+                    </label>
+
+                    <input
+                        id="nie"
+                        placeholder="X1234567A"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Nacionalidad
+                    </label>
+
+                    <input
+                        id="nacionalidad"
+                        placeholder="Española"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Teléfono
+                    </label>
+
+                    <input
+                        id="telefono"
+                        type="tel"
+                        placeholder="+34 600 000 000"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="correo@email.com"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Ciudad / Dirección
+                </label>
+
+                <input
+                    id="direccion"
+                    placeholder="Logroño, La Rioja"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Profesión / Puesto
+                </label>
+
+                <input
+                    id="puesto"
+                    placeholder="Administrativo"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Perfil profesional
+                </label>
+
+                <textarea
+                    id="perfil"
+                    placeholder="Escribe una breve descripción profesional..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Experiencia profesional
+                </label>
+
+                <textarea
+                    id="experiencia"
+                    placeholder="Empresa - Puesto - Fechas
+
+Funciones y responsabilidades..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Formación
+                </label>
+
+                <textarea
+                    id="formacion"
+                    placeholder="Título - Centro - Año"
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Idiomas
+                </label>
+
+                <textarea
+                    id="idiomas"
+                    placeholder="Español: Nativo
+Inglés: B2"
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Habilidades
+                </label>
+
+                <textarea
+                    id="habilidades"
+                    placeholder="Excel, trabajo en equipo, atención al cliente..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="actions">
+
+                <button
+                    class="btn btn-primary"
+                    onclick="actualizarCV()"
+                >
+                    🔄 Actualizar
+                </button>
+
+
+                <button
+                    class="btn btn-success"
+                    onclick="descargarPDF()"
+                >
+                    📥 Descargar PDF
+                </button>
+
+
+                <button
+                    class="btn btn-secondary"
+                    onclick="window.print()"
+                >
+                    🖨️ Imprimir
+                </button>
+
+
+                <button
+                    class="btn btn-danger"
+                    onclick="limpiar()"
+                >
+                    🗑️ Limpiar
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================
+             PREVIEW
+        ====================== -->
+
+        <section class="card">
+
+            <h2>
+                <span class="step">3</span>
+                Vista previa
+            </h2>
+
+            <div class="cv-wrapper">
+
+                <div id="cv">
+
+                    <!-- HEADER CV -->
+
+                    <div class="cv-header">
+
+                        <div
+                            id="cvNombre"
+                            class="cv-name"
+                        >
+                            TU NOMBRE
+                        </div>
+
+                        <div
+                            id="cvPuesto"
+                            class="cv-job"
+                        >
+                            PROFESIONAL
+                        </div>
+
+                    </div>
+
+
+                    <!-- BODY -->
+
+                    <div class="cv-body">
+
+                        <!-- SIDEBAR -->
+
+                        <aside class="cv-sidebar">
+
+                            <div class="cv-section">
+
+                                <h3>
+                                    Contacto
+                                </h3>
+
+
+                                <div class="contact-item">
+
+                                    <strong>
+                                        Teléfono
+                                    </strong>
+
+                                    <span id="cvTelefono">
+                                        —
+                                    </span>
+
+                                </div>
+
+
+                                <div class="contact-item">
+
+                                    <strong>
+                                        Email
+                                    </strong>
+
+                                    <span id="cvEmail">
+                                        —
+                                    </span>
+
+                                </div>
+
+
+                                <div class="contact-item">
+
+                                    <strong>
+                                        Ubicación
+                                    </strong>
+
+                                    <span id="cvDireccion">
+                                        —
+                                    </span>
+
+                                </div>
+
+
+                                <div class="contact-item">
+
+                                    <strong>
+                                        Nacionalidad
+                                    </strong>
+
+                                    <span id="cvNacionalidad">
+                                        —
+                                    </span>
+
+                                </div>
+
+
+                                <!--
+                                NIE oculto de forma
+                                predeterminada por privacidad.
+                                -->
+
+                            </div>
+
+
+                            <div class="cv-section">
+
+                                <h3>
+                                    Idiomas
+                                </h3>
+
+                                <p id="cvIdiomas">
+                                    —
+                                </p>
+
+                            </div>
+
+
+                            <div class="cv-section">
+
+                                <h3>
+                                    Habilidades
+                                </h3>
+
+                                <div
+                                    id="cvHabilidades"
+                                    class="badges"
+                                >
+                                    <span class="empty">
+                                        —
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </aside>
+
+
+                        <!-- MAIN -->
+
+                        <main class="cv-main">
+
+                            <div class="cv-section">
+
+                                <h3>
+                                    Perfil profesional
+                                </h3>
+
+                                <p id="cvPerfil">
+                                    Escribe tu perfil profesional.
+                                </p>
+
+                            </div>
+
+
+                            <div class="cv-section">
+
+                                <h3>
+                                    Experiencia
+                                </h3>
+
+                                <p id="cvExperiencia">
+                                    Añade tu experiencia profesional.
+                                </p>
+
+                            </div>
+
+
+                            <div class="cv-section">
+
+                                <h3>
+                                    Formación
+                                </h3>
+
+                                <p id="cvFormacion">
+                                    Añade tu formación.
+                                </p>
+
+                            </div>
+
+                        </main>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+
+<footer>
+
+    CV Smart OCR · Aplicación estática ·
+    OCR en el navegador
+
+</footer>
+
+
+<script>
+
+/* =========================================
+   ELEMENTOS
+========================================= */
+
+const cameraInput =
+    document.getElementById(
+        "cameraInput"
+    );
+
+const galleryInput =
+    document.getElementById(
+        "galleryInput"
+    );
+
+const fileName =
+    document.getElementById(
+        "fileName"
+    );
+
+const imagePreview =
+    document.getElementById(
+        "imagePreview"
+    );
+
+const ocrButton =
+    document.getElementById(
+        "ocrButton"
+    );
+
+const progressWrapper =
+    document.getElementById(
+        "progressWrapper"
+    );
+
+const progressBar =
+    document.getElementById(
+        "progressBar"
+    );
+
+const ocrStatus =
+    document.getElementById(
+        "ocrStatus"
+    );
+
+const ocrText =
+    document.getElementById(
+        "ocrText"
+    );
+
+
+let selectedFile = null;
+
+
+/* =========================================
+   CÁMARA
+========================================= */
+
+cameraInput.addEventListener(
+    "change",
+    async () => {
+
+        if (!cameraInput.files.length) {
+            return;
+        }
+
+        seleccionarArchivo(
+            cameraInput.files[0]
+        );
+
+        /*
+         * OCR automático
+         */
+        await ejecutarOCR(
+            cameraInput.files[0]
+        );
+
+    }
+);
+
+
+/* =========================================
+   GALERÍA
+========================================= */
+
+galleryInput.addEventListener(
+    "change",
+    () => {
+
+        if (!galleryInput.files.length) {
+            return;
+        }
+
+        seleccionarArchivo(
+            galleryInput.files[0]
+        );
+
+    }
+);
+
+
+/* =========================================
+   SELECCIONAR ARCHIVO
+========================================= */
+
+function seleccionarArchivo(file) {
+
+    selectedFile = file;
+
+    fileName.textContent =
+        "📄 " + file.name;
+
+
+    /*
+     * Mostrar imagen
+     */
+
+    if (
+        file.type.startsWith(
+            "image/"
+        )
+    ) {
+
+        const url =
+            URL.createObjectURL(
+                file
+            );
+
+        imagePreview.src =
+            url;
+
+        imagePreview.style.display =
+            "block";
+
+    }
+
+}
+
+
+/* =========================================
+   BOTÓN OCR
+========================================= */
+
+ocrButton.addEventListener(
+    "click",
+    async () => {
+
+        if (!selectedFile) {
+
+            alert(
+                "Primero haz una foto o selecciona una imagen."
+            );
+
+            return;
+
+        }
+
+        await ejecutarOCR(
+            selectedFile
+        );
+
+    }
+);
+
+
+/* =========================================
+   OCR
+========================================= */
+
+async function ejecutarOCR(file) {
+
+    if (
+        !file.type.startsWith(
+            "image/"
+        )
+    ) {
+
+        alert(
+            "Selecciona una imagen JPG o PNG."
+        );
+
+        return;
+
+    }
+
+
+    progressWrapper.style.display =
+        "block";
+
+    progressBar.style.width =
+        "0%";
+
+    ocrButton.disabled =
+        true;
+
+    ocrStatus.textContent =
+        "🔍 Preparando reconocimiento...";
+
+
+    try {
+
+        const resultado =
+            await Tesseract.recognize(
+                file,
+                "spa+eng",
+                {
+
+                    logger:
+                        informacion => {
+
+                            if (
+                                typeof informacion.progress
+                                === "number"
+                            ) {
+
+                                const porcentaje =
+                                    Math.round(
+                                        informacion.progress
+                                        * 100
+                                    );
+
+                                progressBar.style.width =
+                                    porcentaje + "%";
+
+                                ocrStatus.textContent =
+                                    "🔍 Leyendo documento: "
+                                    + porcentaje
+                                    + "%";
+
+                            }
+
+                        }
+
+                }
+            );
+
+
+        const texto =
+            resultado.data.text;
+
+
+        ocrText.value =
+            texto;
+
+
+        progressBar.style.width =
+            "100%";
+
+
+        ocrStatus.textContent =
+            "✅ Documento leído";
+
+
+        /*
+         * Extraer información
+         */
+
+        extraerDatos(
+            texto
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            error
+        );
+
+        ocrStatus.textContent =
+            "❌ Error en OCR";
+
+        alert(
+            "No se pudo leer el documento. " +
+            "Haz otra foto con buena iluminación."
+        );
+
+    } finally {
+
+        ocrButton.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =========================================
+   EXTRAER DATOS
+========================================= */
+
+function extraerDatos(texto) {
+
+    const textoMayus =
+        texto.toUpperCase();
+
+
+    /*
+     * NIE
+     *
+     * X1234567A
+     * Y1234567B
+     * Z1234567C
+     */
+
+    const nie =
+        textoMayus.match(
+            /\b[XYZ]\d{7}[A-Z]\b/
+        );
+
+
+    if (nie) {
+
+        document.getElementById(
+            "nie"
+        ).value =
+            nie[0];
+
+    }
+
+
+    /*
+     * Nacionalidad
+     */
+
+    const nacionalidad =
+        obtenerCampo(
+            texto,
+            [
+                "NACIONALIDAD",
+                "NATIONALITY"
+            ]
+        );
+
+
+    if (nacionalidad) {
+
+        document.getElementById(
+            "nacionalidad"
+        ).value =
+            nacionalidad;
+
+    }
+
+
+    /*
+     * Nombre
+     */
+
+    const lineas =
+        texto
+            .split("\n")
+            .map(
+                linea =>
+                    linea.trim()
+            )
+            .filter(
+                linea =>
+                    linea.length > 3
+            );
+
+
+    const posibles =
+        lineas.filter(
+            linea => {
+
+                const limpio =
+                    linea.replace(
+                        /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g,
+                        ""
+                    );
+
+                const palabras =
+                    limpio
+                        .trim()
+                        .split(/\s+/);
+
+
+                return (
+                    palabras.length >= 2 &&
+                    palabras.length <= 5 &&
+                    limpio.length >= 6
+                );
+
+            }
+        );
+
+
+    if (
+        posibles.length > 0
+    ) {
+
+        /*
+         * Solo rellenamos si
+         * todavía están vacíos.
+         */
+
+        const nombreActual =
+            document.getElementById(
+                "nombre"
+            ).value;
+
+
+        if (!nombreActual) {
+
+            const partes =
+                posibles[0]
+                    .split(/\s+/);
+
+
+            document.getElementById(
+                "nombre"
+            ).value =
+                partes[0] || "";
+
+
+            document.getElementById(
+                "apellidos"
+            ).value =
+                partes
+                    .slice(1)
+                    .join(" ");
+
+        }
+
+    }
+
+
+    actualizarCV();
+
+}
+
+
+/* =========================================
+   BUSCAR CAMPO
+========================================= */
+
+function obtenerCampo(
+    texto,
+    etiquetas
+) {
+
+    const lineas =
+        texto.split("\n");
+
+
+    for (
+        const linea of lineas
+    ) {
+
+        const mayus =
+            linea.toUpperCase();
+
+
+        for (
+            const etiqueta
+            of etiquetas
+        ) {
+
+            if (
+                mayus.includes(
+                    etiqueta
+                )
+            ) {
+
+                const partes =
+                    linea.split(
+                        /[:\-]/
+                    );
+
+
+                if (
+                    partes.length > 1
+                ) {
+
+                    return partes
+                        .slice(1)
+                        .join(":")
+                        .trim();
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================
+   ACTUALIZAR CV
+========================================= */
+
+function obtenerValor(id) {
+
+    const elemento =
+        document.getElementById(
+            id
+        );
+
+    if (!elemento) {
+        return "";
+    }
+
+    return elemento.value.trim();
+
+}
+
+
+function actualizarCV() {
+
+    const nombre =
+        obtenerValor(
+            "nombre"
+        );
+
+    const apellidos =
+        obtenerValor(
+            "apellidos"
+        );
+
+
+    document.getElementById(
+        "cvNombre"
+    ).textContent =
+        (
+            `${nombre} ${apellidos}`
+        ).trim()
+        .toUpperCase()
+        ||
+        "TU NOMBRE";
+
+
+    document.getElementById(
+        "cvPuesto"
+    ).textContent =
+        obtenerValor(
+            "puesto"
+        ) ||
+        "PROFESIONAL";
+
+
+    document.getElementById(
+        "cvTelefono"
+    ).textContent =
+        obtenerValor(
+            "telefono"
+        ) || "—";
+
+
+    document.getElementById(
+        "cvEmail"
+    ).textContent =
+        obtenerValor(
+            "email"
+        ) || "—";
+
+
+    document.getElementById(
+        "cvDireccion"
+    ).textContent =
+        obtenerValor(
+            "direccion"
+        ) || "—";
+
+
+    document.getElementById(
+        "cvNacionalidad"
+    ).textContent =
+        obtenerValor(
+            "nacionalidad"
+        ) || "—";
+
+
+    document.getElementById(
+        "cvPerfil"
+    ).textContent =
+        obtenerValor(
+            "perfil"
+        ) ||
+        "Escribe tu perfil profesional.";
+
+
+    document.getElementById(
+        "cvExperiencia"
+    ).textContent =
+        obtenerValor(
+            "experiencia"
+        ) ||
+        "Añade tu experiencia profesional.";
+
+
+    document.getElementById(
+        "cvFormacion"
+    ).textContent =
+        obtenerValor(
+            "formacion"
+        ) ||
+        "Añade tu formación.";
+
+
+    document.getElementById(
+        "cvIdiomas"
+    ).textContent =
+        obtenerValor(
+            "idiomas"
+        ) || "—";
+
+
+    /*
+     * Habilidades
+     */
+
+    const habilidades =
+        obtenerValor(
+            "habilidades"
+        )
+            .split(
+                /[,;\n]/
+            )
+            .map(
+                x => x.trim()
+            )
+            .filter(
+                Boolean
+            );
+
+
+    const contenedor =
+        document.getElementById(
+            "cvHabilidades"
+        );
+
+
+    contenedor.innerHTML =
+        "";
+
+
+    if (
+        habilidades.length === 0
+    ) {
+
+        const span =
+            document.createElement(
+                "span"
+            );
+
+        span.className =
+            "empty";
+
+        span.textContent =
+            "—";
+
+        contenedor.appendChild(
+            span
+        );
+
+    } else {
+
+        habilidades.forEach(
+            habilidad => {
+
+                const badge =
+                    document.createElement(
+                        "span"
+                    );
+
+                badge.className =
+                    "badge";
+
+                badge.textContent =
+                    habilidad;
+
+                contenedor.appendChild(
+                    badge
+                );
+
+            }
+        );
+
+    }
+
+
+    guardarDatos();
+
+}
+
+
+/* =========================================
+   GUARDAR
+========================================= */
+
+const campos = [
+
+    "nombre",
+    "apellidos",
+    "nie",
+    "nacionalidad",
+    "telefono",
+    "email",
+    "direccion",
+    "puesto",
+    "perfil",
+    "experiencia",
+    "formacion",
+    "idiomas",
+    "habilidades"
+
+];
+
+
+function guardarDatos() {
+
+    const datos = {};
+
+
+    campos.forEach(
+        id => {
+
+            datos[id] =
+                obtenerValor(
+                    id
+                );
+
+        }
+    );
+
+
+    localStorage.setItem(
+        "cvSmartOCR",
+        JSON.stringify(
+            datos
+        )
+    );
+
+}
+
+
+/* =========================================
+   CARGAR
+========================================= */
+
+function cargarDatos() {
+
+    const guardado =
+        localStorage.getItem(
+            "cvSmartOCR"
+        );
+
+
+    if (!guardado) {
+        return;
+    }
+
+
+    try {
+
+        const datos =
+            JSON.parse(
+                guardado
+            );
+
+
+        Object.entries(
+            datos
+        ).forEach(
+            ([id, valor]) => {
+
+                const elemento =
+                    document.getElementById(
+                        id
+                    );
+
+
+                if (elemento) {
+
+                    elemento.value =
+                        valor;
+
+                }
+
+            }
+        );
+
+
+        actualizarCV();
+
+    } catch(error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   PDF
+========================================= */
+
+async function descargarPDF() {
+
+    actualizarCV();
+
+
+    const cv =
+        document.getElementById(
+            "cv"
+        );
+
+
+    try {
+
+        const canvas =
+            await html2canvas(
+                cv,
+                {
+                    scale: 2,
+                    backgroundColor:
+                        "#ffffff",
+                    useCORS: true
+                }
+            );
+
+
+        const imagen =
+            canvas.toDataURL(
+                "image/png"
+            );
+
+
+        const {
+            jsPDF
+        } = window.jspdf;
+
+
+        const pdf =
+            new jsPDF(
+                {
+                    orientation:
+                        "portrait",
+
+                    unit:
+                        "mm",
+
+                    format:
+                        "a4"
+                }
+            );
+
+
+        const anchoPagina =
+            pdf.internal.pageSize
+                .getWidth();
+
+
+        const altoPagina =
+            pdf.internal.pageSize
+                .getHeight();
+
+
+        const ratio =
+            Math.min(
+                anchoPagina /
+                    canvas.width,
+
+                altoPagina /
+                    canvas.height
+            );
+
+
+        const ancho =
+            canvas.width *
+            ratio;
+
+
+        const alto =
+            canvas.height *
+            ratio;
+
+
+        const x =
+            (
+                anchoPagina -
+                ancho
+            ) / 2;
+
+
+        pdf.addImage(
+            imagen,
+            "PNG",
+            x,
+            0,
+            ancho,
+            alto
+        );
+
+
+        const nombre =
+            obtenerValor(
+                "nombre"
+            ) ||
+            "CV";
+
+
+        pdf.save(
+            "CV-" +
+            nombre
+                .replace(
+                    /\s+/g,
+                    "-"
+                ) +
+            ".pdf"
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            "No se pudo generar el PDF."
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   LIMPIAR
+========================================= */
+
+function limpiar() {
+
+    const confirmar =
+        confirm(
+            "¿Seguro que quieres borrar todos los datos?"
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    localStorage.removeItem(
+        "cvSmartOCR"
+    );
+
+
+    campos.forEach(
+        id => {
+
+            const elemento =
+                document.getElementById(
+                    id
+                );
+
+            if (elemento) {
+                elemento.value =
+                    "";
+            }
+
+        }
+    );
+
+
+    ocrText.value =
+        "";
+
+
+    imagePreview.src =
+        "";
+
+    imagePreview.style.display =
+        "none";
+
+
+    fileName.textContent =
+        "Ningún documento seleccionado";
+
+
+    actualizarCV();
+
+}
+
+
+/* =========================================
+   ACTUALIZACIÓN AUTOMÁTICA
+========================================= */
+
+campos.forEach(
+    id => {
+
+        const elemento =
+            document.getElementById(
+                id
+            );
+
+
+        elemento.addEventListener(
+            "input",
+            actualizarCV
+        );
+
+    }
+);
+
+
+/* =========================================
+   INICIAR
+========================================= */
+
+cargarDatos();
+
+actualizarCV();
+
+</script>
+
+</body>
+</html>
