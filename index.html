@@ -376,7 +376,6 @@ footer.pagefoot{text-align:center;color:var(--ink-soft);font-size:12.5px;padding
 
       <div class="two-col" style="gap:14px">
         <div class="field"><label for="nie">NIE / Documento</label><input id="nie" placeholder="X1234567A"></div>
-        <div class="field"><label for="nacionalidad">Nacionalidad</label><input id="nacionalidad" placeholder="Española"></div>
       </div>
 
       <div class="two-col" style="gap:14px">
@@ -690,7 +689,7 @@ function analizarTexto(texto) {
     // Alternativa: buscar una línea con apariencia de nombre de persona (formato DNI español)
     const lineas = original.split(/\r?\n/).map(x => x.trim()).filter(x => x.length > 3);
     const palabrasProhibidas = [
-      "NOMBRE", "APELLIDOS", "SURNAME", "FORENAME", "NACIONALIDAD", "NATIONALITY",
+      "NOMBRE", "APELLIDOS", "SURNAME", "FORENAME", 
       "NIE", "DOCUMENTO", "PERSONAL NUMBER", "FECHA", "NACIMIENTO", "BIRTH",
       "EXPEDICION", "CADUCIDAD", "EXPIRY", "SEXO", "SEX", "DNI", "ESPAÑA", "REINO",
       "PERMISO", "PERMIT", "RESIDENCIA", "RESIDENCE"
@@ -730,7 +729,7 @@ function extraerNombreEtiquetado(original, mayus) {
 
         const limpio = candidata.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g, "").trim();
         const palabras = limpio.split(/\s+/).filter(Boolean);
-        const esEtiqueta = /FECHA|NACIMIENTO|BIRTH|SEXO|SEX|PERMIT|VALID|NIE|NACIONALIDAD|NATIONALITY/.test(candidata.toUpperCase());
+        const esEtiqueta = /FECHA|NACIMIENTO|BIRTH|SEXO|SEX|PERMIT|VALID|NIE/.test(candidata.toUpperCase());
 
         if (!esEtiqueta && palabras.length >= 2 && palabras.length <= 5 && limpio.length >= 4) {
           const partes = [...palabras];
