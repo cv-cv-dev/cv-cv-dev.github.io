@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DossierCV · Crea tu currículum desde cualquier documento</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+  </script>
+
+  <style>
+    /* ====================================================
+       TOKENS (claro / oscuro)
+       ==================================================== */
+    :root {
+      --bg: #f4f2ed;
+      --surface: #ffffff;
+      --card: #fcfaf7;
+      --border: #e3dfd7;
+      --border-focus: #b7aa96;
+      --text: #1e1b17;
+      --text-secondary: #5f5950;
+      --text-muted: #8f887e;
+      --accent: #a4533e;
+      --accent-light: #f0e5e0;
+      --accent-dark: #7d3a2a;
+      --olive: #5d6d53;
+      --gold: #b28a3b;
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.07);
+      --cv-bg: #ffffff;
+      --cv-text: #1c2431;
+      --cv-sidebar: #f5f2ea;
+    }
+
+    body.dark {
+      --bg: #1a1816;
+      --surface: #2a2724;
+      --card: #2f2b28;
+      --border: #3d3833;
+      --border-focus: #6b6258;
+      --text: #e8e3dc;
+      --text-secondary: #b5ae a4;
+      --text-muted: #8a8278;
+      --accent: #c97a62;
+      --accent-light: #3d2e28;
+      --accent-dark: #e0917a;
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.3);
+      --cv-bg: #2a2724;
+      --cv-text: #e8e3dc;
+      --cv-sidebar: #36322e;
+    }
+
+    /* ====================================================
+       RESET & BASE
+       ==================================================== */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1.5rem 1rem;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* ====================================================
+       CONTENEDOR
+       ==================================================== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ====================================================
+       HEADER
+       ==================================================== */
+    .app-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 1rem 0 1.8rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+      transition: border-color 0.3s;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .brand h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+    }
+
+    .brand h1 span {
+      color: var(--accent);
+    }
+
+    .brand .tagline {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin-top: 0.1rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 1.2rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-badge .dot {
+      width: 8px;
+      height: 8px;
+      background: #3ba55d;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Toggle modo oscuro */
+    .theme-toggle {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--card);
+    }
+
+    /* ====================================================
+       PROGRESO GLOBAL
+       ==================================================== */
+    .progress-global {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.6rem 1.2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .progress-global .label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .progress-global .track {
+      flex: 1;
+      min-width: 120px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .progress-global .bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-global .steps-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* ====================================================
+       PASOS (CARDS)
+       ==================================================== */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .step {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 2.2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .step:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      background: var(--bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .step-header h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .step-hint {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      margin-top: 0.1rem;
+    }
+
+    /* ====================================================
+       SCANNER
+       ==================================================== */
+    .scanner {
+      background: var(--card);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 2.8rem 2rem;
+      text-align: center;
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+
+    .scanner.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .scanner-icon {
+      font-size: 3rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .scanner h3 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1.2rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .scanner .hint {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .scanner-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 1.6rem;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .file-name {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .document-preview {
+      display: none;
+      max-width: 280px;
+      max-height: 220px;
+      object-fit: contain;
+      margin: 1.2rem auto 0;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .progress-area {
+      display: none;
+      margin-top: 1.6rem;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.25s ease;
+    }
+
+    .status-text {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* ====================================================
+       BOTONES
+       ==================================================== */
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem 1.5rem;
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s, border-color 0.15s, color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg);
+      border-color: var(--text-secondary);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-secondary);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg);
+      border-color: var(--border);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: #b33a3a;
+      border-color: #f0d6d6;
+    }
+
+    .btn-danger:hover {
+      background: #fdf0f0;
+      border-color: #b33a3a;
+    }
+
+    body.dark .btn-danger {
+      color: #e07070;
+      border-color: #5a3a3a;
+    }
+
+    body.dark .btn-danger:hover {
+      background: #3d2a2a;
+      border-color: #e07070;
+    }
+
+    .btn-sm {
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ====================================================
+       FORMULARIOS
+       ==================================================== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 1.4rem;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font: inherit;
+      font-size: 0.95rem;
+      background: var(--surface);
+      color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.3s, color 0.3s;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(183, 170, 150, 0.15);
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .field .msg {
+      font-size: 0.75rem;
+      min-height: 1.2rem;
+    }
+
+    .field .msg.error {
+      color: #b33a3a;
+    }
+
+    .field .msg.ok {
+      color: var(--olive);
+    }
+
+    .privacy-note {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem 1.2rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .privacy-note .icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    /* ====================================================
+       ITEMS DINÁMICOS (con drag & drop)
+       ==================================================== */
+    .subhead {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .empty-hint {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-style: italic;
+      margin-bottom: 0.8rem;
+    }
+
+    .item-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem 1.2rem 0.8rem;
+      margin-bottom: 0.8rem;
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      cursor: grab;
+      position: relative;
+    }
+
+    .item-card:active {
+      cursor: grabbing;
+    }
+
+    .item-card.dragging {
+      opacity: 0.4;
+      transform: scale(0.98);
+    }
+
+    .item-card .drag-handle {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.8rem;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      cursor: grab;
+      user-select: none;
+    }
+
+    .item-card .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .item-head strong {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.6rem 0;
+      transition: border-color 0.3s;
+    }
+
+    /* ====================================================
+       FOTO
+       ==================================================== */
+    .photo-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .photo-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid var(--border);
+      display: none;
+      background: var(--bg);
+    }
+
+    /* ====================================================
+       TEMPLATES (colores)
+       ==================================================== */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .template-item {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--surface);
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .template-item:hover {
+      border-color: var(--text-secondary);
+    }
+
+    .template-item.active {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .template-name {
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    /* ====================================================
+       ACCIONES
+       ==================================================== */
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 1.4rem;
+    }
+
+    /* ====================================================
+       CV PREVIEW
+       ==================================================== */
+    .cv-scroll {
+      overflow-x: auto;
+      padding: 0.5rem 0;
+    }
+
+    #cv {
+      width: 794px;
+      min-height: 1123px;
+      margin: 0 auto;
+      background: var(--cv-bg);
+      color: var(--cv-text);
+      box-shadow: 0 20px 48px -20px rgba(0, 0, 0, 0.25);
+      border-radius: 4px;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .cv-header {
+      color: #fff;
+      padding: 2.2rem 2.8rem;
+      display: flex;
+      gap: 1.8rem;
+      align-items: center;
+      background: var(--cv-accent, #2a3b6b);
+    }
+
+    .cv-photo {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .cv-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      word-break: break-word;
+    }
+
+    .cv-job {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      margin-top: 0.2rem;
+      font-weight: 400;
+    }
+
+    .cv-body {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: 800px;
+    }
+
+    .cv-sidebar {
+      background: var(--cv-sidebar);
+      padding: 1.8rem 1.6rem;
+      transition: background 0.3s;
+    }
+
+    .cv-main {
+      padding: 2rem 2.4rem;
+    }
+
+    .cv-section {
+      margin-bottom: 1.6rem;
+    }
+
+    .cv-section h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--cv-accent, #2a3b6b);
+      border-bottom: 1.5px solid var(--cv-accent, #2a3b6b);
+      padding-bottom: 0.4rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .cv-section p {
+      margin: 0;
+      color: var(--cv-text);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .contact-item {
+      margin-bottom: 0.8rem;
+      font-size: 0.8rem;
+      color: var(--cv-text);
+      word-break: break-word;
+    }
+
+    .contact-item strong {
+      display: block;
+      color: var(--cv-text);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.1rem;
+      opacity: 0.7;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .badge {
+      padding: 0.2rem 0.8rem;
+      border-radius: 100px;
+      background: var(--cv-bg);
+      border: 1px solid var(--cv-accent, #2a3b6b);
+      color: var(--cv-accent, #2a3b6b);
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .cv-experience {
+      margin-bottom: 1.2rem;
+    }
+
+    .cv-experience-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .cv-company {
+      color: var(--cv-accent, #2a3b6b);
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin: 0.1rem 0 0.2rem;
+    }
+
+    .cv-date {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      margin-bottom: 0.2rem;
+    }
+
+    /* ====================================================
+       TOAST
+       ==================================================== */
+    .toast-stack {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 100;
+      max-width: 340px;
+    }
+
+    .toast {
+      background: var(--text);
+      color: var(--surface);
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      box-shadow: var(--shadow-lg);
+      animation: toastIn 0.2s ease-out;
+    }
+
+    .toast.error {
+      background: #b33a3a;
+      color: #fff;
+    }
+
+    .toast.ok {
+      background: var(--olive);
+      color: #fff;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ====================================================
+       FOOTER
+       ==================================================== */
+    .app-footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      padding: 3rem 0 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2.5rem;
+      transition: border-color 0.3s;
+    }
+
+    /* ====================================================
+       RESPONSIVE
+       ==================================================== */
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 820px) {
+      .two-col-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+      .step {
+        padding: 1.4rem;
+      }
+      .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+      }
+      .cv-body {
+        grid-template-columns: 1fr;
+      }
+      .cv-sidebar {
+        order: 2;
+      }
+      .cv-main {
+        order: 1;
+      }
+      .templates-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .progress-global {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+      }
+      .progress-global .label,
+      .progress-global .steps-text {
+        white-space: normal;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .templates-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .scanner {
+        padding: 1.8rem 1rem;
+      }
+    }
+
+    /* ====================================================
+       PRINT (para vista previa del CV)
+       ==================================================== */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #cv,
+      #cv * {
+        visibility: visible;
+      }
+      #cv {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 794px;
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">📄</div>
+        <div>
+          <h1>Dossier<span>CV</span></h1>
+          <div class="tagline">Convierte tu documento en CV profesional</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="header-badge">
+          <span class="dot"></span>
+          Procesamiento local · sin servidor
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema oscuro/claro">
+          🌙 <span id="themeLabel">Oscuro</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- PROGRESO GLOBAL -->
+    <div class="progress-global" id="progressGlobal">
+      <span class="label">📊 Progreso</span>
+      <div class="track">
+        <div class="bar" id="progressBarGlobal" style="width:0%;"></div>
+      </div>
+      <span class="steps-text" id="progressStepsText">0 / 5 pasos completados</span>
+    </div>
+
+    <!-- PASOS -->
+    <div class="steps">
+
+      <!-- PASO 1: ESCANER -->
+      <section class="step" data-step="1">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <div>
+            <h2>Escanea tu documento</h2>
+            <div class="step-hint">Usa buena luz y evita reflejos para una lectura clara.</div>
+          </div>
+        </div>
+
+        <div class="scanner" id="scannerZone">
+          <div class="scanner-icon">🪪</div>
+          <h3>Arrastra una imagen o haz una foto</h3>
+          <p class="hint">Admite JPG y PNG. La imagen nunca sale de tu dispositivo.</p>
+
+          <div class="scanner-actions">
+            <label for="cameraInput" class="btn btn-primary">📷 Abrir cámara</label>
+            <input id="cameraInput" class="file-input" type="file" accept="image/*" capture="environment" />
+
+            <label for="galleryInput" class="btn btn-outline">🖼️ Elegir imagen</label>
+            <input id="galleryInput" class="file-input" type="file" accept="image/*" />
+          </div>
+
+          <div id="fileName" class="file-name">Ningún archivo seleccionado</div>
+          <img id="documentPreview" class="document-preview" alt="Vista previa del documento" />
+        </div>
+
+        <div id="progressArea" class="progress-area">
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+          <div id="ocrStatus" class="status-text">Preparando lectura…</div>
+        </div>
+
+        <div class="actions-row">
+          <button id="ocrButton" class="btn btn-primary">🔍 Leer documento</button>
+        </div>
+
+        <div class="field" style="margin-top:1.2rem;">
+          <label for="ocrText">Texto reconocido</label>
+          <textarea id="ocrText" placeholder="El texto detectado aparecerá aquí…" rows="3"></textarea>
+        </div>
+
+        <div class="privacy-note">
+          <span class="icon">🔒</span>
+          El reconocimiento de texto se ejecuta completamente en tu navegador. No se envía nada a ningún servidor.
+        </div>
+      </section>
+
+      <!-- PASO 2 + 3: DOS COLUMNAS -->
+      <div class="two-col-grid">
+
+        <!-- PASO 2: DATOS PERSONALES -->
+        <section class="step" data-step="2">
+          <div class="step-header">
+            <span class="step-number">2</span>
+            <div>
+              <h2>Datos personales</h2>
+              <div class="step-hint">Revisa lo detectado y completa lo que falte.</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field"><label>Nombre</label><input id="nombre" placeholder="María" /></div>
+            <div class="field"><label>Apellidos</label><input id="apellidos" placeholder="González Pérez" /></div>
+          </div>
+
+          <div class="field" style="margin-top:0.2rem;"><label>NIE / Documento</label><input id="nie" placeholder="X1234567A" /></div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Teléfono</label>
+              <input id="telefono" type="tel" placeholder="+34 600 000 000" />
+              <div class="msg" id="telefonoMsg"></div>
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input id="email" type="email" placeholder="correo@email.com" />
+              <div class="msg" id="emailMsg"></div>
+            </div>
+          </div>
+
+          <div class="field"><label>Ciudad / Ubicación</label><input id="direccion" placeholder="Madrid, España" /></div>
+
+          <div class="form-grid">
+            <div class="field"><label>LinkedIn</label><input id="linkedin" placeholder="linkedin.com/in/tu-perfil" /></div>
+            <div class="field"><label>Web / Portfolio</label><input id="web" placeholder="tuweb.com" /></div>
+          </div>
+
+          <div class="field"><label>Profesión</label><input id="puesto" placeholder="Desarrolladora Frontend" /></div>
+          <div class="field"><label>Perfil profesional</label><textarea id="perfil" placeholder="Breve descripción de tu experiencia y objetivos…"></textarea></div>
+
+          <div class="privacy-note">
+            <span class="icon">🛡️</span>
+            Por privacidad, esta aplicación nunca incluye el número de documento completo en el CV, aunque lo detecte.
+          </div>
+        </section>
+
+        <!-- PASO 3: TRAYECTORIA -->
+        <section class="step" data-step="3">
+          <div class="step-header">
+            <span class="step-number">3</span>
+            <div>
+              <h2>Trayectoria</h2>
+              <div class="step-hint">Añade experiencia, formación, certificaciones y más.</div>
+            </div>
+          </div>
+
+          <!-- Experiencia -->
+          <div class="subhead">💼 Experiencia</div>
+          <p class="empty-hint" id="expEmpty">Aún no has añadido ninguna experiencia.</p>
+          <div id="experiencias" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarExperiencia()">+ Añadir experiencia</button>
+
+          <hr class="divider" />
+
+          <!-- Formación -->
+          <div class="subhead">🎓 Formación</div>
+          <p class="empty-hint" id="formEmpty">Aún no has añadido ninguna formación.</p>
+          <div id="formaciones" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarFormacion()">+ Añadir formación</button>
+
+          <hr class="divider" />
+
+          <!-- Certificaciones -->
+          <div class="subhead">📜 Certificaciones</div>
+          <p class="empty-hint" id="certEmpty">Aún no has añadido ninguna certificación.</p>
+          <div id="certificaciones" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarCertificacion()">+ Añadir certificación</button>
+
+          <hr class="divider" />
+
+          <!-- Referencias -->
+          <div class="subhead">📇 Referencias</div>
+          <p class="empty-hint" id="refEmpty">Aún no has añadido referencias.</p>
+          <div id="referencias" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarReferencia()">+ Añadir referencia</button>
+
+          <hr class="divider" />
+
+          <div class="field"><label>Idiomas</label><textarea id="idiomas" placeholder="Español: Nativo&#10;Inglés: B2&#10;Francés: A2"></textarea></div>
+
+          <div class="field"><label>Habilidades</label><textarea id="habilidades" placeholder="React, TypeScript, trabajo en equipo, comunicación…"></textarea></div>
+
+          <div class="field">
+            <label>Foto para el CV (opcional)</label>
+            <div class="photo-row">
+              <img id="photoThumb" class="photo-thumb" alt="Foto seleccionada" />
+              <input id="photoInput" type="file" accept="image/*" style="flex:1;" />
+              <button type="button" class="btn btn-danger btn-sm" id="quitarFotoBtn" style="display:none;" onclick="quitarFoto()">Quitar</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- PASO 4: DISEÑO -->
+      <section class="step" data-step="4">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <div>
+            <h2>Diseño del CV</h2>
+            <div class="step-hint">Elige el color que mejor refleje tu estilo.</div>
+          </div>
+        </div>
+
+        <div class="templates-grid">
+          <div class="template-item active" data-theme="indigo" data-color="#2A3B6B" onclick="cambiarTema('indigo','#2A3B6B',this)">
+            <span class="swatch" style="background:#2A3B6B"></span><span class="template-name">Añil</span>
+          </div>
+          <div class="template-item" data-theme="rust" data-color="#A44C3A" onclick="cambiarTema('rust','#A44C3A',this)">
+            <span class="swatch" style="background:#A44C3A"></span><span class="template-name">Óxido</span>
+          </div>
+          <div class="template-item" data-theme="forest" data-color="#2F5233" onclick="cambiarTema('forest','#2F5233',this)">
+            <span class="swatch" style="background:#2F5233"></span><span class="template-name">Bosque</span>
+          </div>
+          <div class="template-item" data-theme="graphite" data-color="#3A3F47" onclick="cambiarTema('graphite','#3A3F47',this)">
+            <span class="swatch" style="background:#3A3F47"></span><span class="template-name">Grafito</span>
+          </div>
+          <div class="template-item" data-theme="wine" data-color="#6B1F3A" onclick="cambiarTema('wine','#6B1F3A',this)">
+            <span class="swatch" style="background:#6B1F3A"></span><span class="template-name">Vino</span>
+          </div>
+          <div class="template-item" data-theme="petrol" data-color="#1F4E5F" onclick="cambiarTema('petrol','#1F4E5F',this)">
+            <span class="swatch" style="background:#1F4E5F"></span><span class="template-name">Petróleo</span>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="descargarPDF()">⬇️ Descargar PDF</button>
+          <button class="btn btn-outline" onclick="window.print()">🖨️ Imprimir</button>
+          <button class="btn btn-ghost" onclick="exportarJSON()">💾 Guardar copia</button>
+          <label class="btn btn-ghost" for="importInput">📂 Cargar copia</label>
+          <input id="importInput" class="file-input" type="file" accept="application/json" />
+          <button class="btn btn-danger" onclick="limpiarTodo()">🗑️ Borrar todo</button>
+        </div>
+      </section>
+
+      <!-- PASO 5: VISTA PREVIA -->
+      <section class="step" data-step="5">
+        <div class="step-header">
+          <span class="step-number">5</span>
+          <div>
+            <h2>Vista previa</h2>
+            <div class="step-hint">Se actualiza en tiempo real mientras escribes.</div>
+          </div>
+        </div>
+
+        <div class="cv-scroll">
+          <div id="cv" style="--cv-accent:#2A3B6B">
+            <div class="cv-header">
+              <img id="cvPhoto" class="cv-photo" alt="Foto de perfil" />
+              <div>
+                <div id="cvNombre" class="cv-name">TU NOMBRE</div>
+                <div id="cvPuesto" class="cv-job">PROFESIONAL</div>
+              </div>
+            </div>
+
+            <div class="cv-body">
+              <aside class="cv-sidebar">
+                <div class="cv-section">
+                  <h3>Contacto</h3>
+                  <div class="contact-item"><strong>Teléfono</strong><span id="cvTelefono">—</span></div>
+                  <div class="contact-item"><strong>Email</strong><span id="cvEmail">—</span></div>
+                  <div class="contact-item"><strong>Ubicación</strong><span id="cvDireccion">—</span></div>
+                  <div class="contact-item"><strong>LinkedIn</strong><span id="cvLinkedin">—</span></div>
+                  <div class="contact-item"><strong>Web</strong><span id="cvWeb">—</span></div>
+                </div>
+                <div class="cv-section"><h3>Idiomas</h3><p id="cvIdiomas">—</p></div>
+                <div class="cv-section"><h3>Habilidades</h3><div id="cvHabilidades" class="badges">—</div></div>
+              </aside>
+
+              <main class="cv-main">
+                <div class="cv-section"><h3>Perfil</h3><p id="cvPerfil">Escribe tu perfil profesional.</p></div>
+                <div class="cv-section"><h3>Experiencia profesional</h3><div id="cvExperiencias">—</div></div>
+                <div class="cv-section"><h3>Formación</h3><div id="cvFormaciones">—</div></div>
+                <div class="cv-section"><h3>Certificaciones</h3><div id="cvCertificaciones">—</div></div>
+                <div class="cv-section"><h3>Referencias</h3><div id="cvReferencias">—</div></div>
+              </main>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /steps -->
+
+    <footer class="app-footer">
+      DossierCV · Aplicación estática · Todo el procesamiento ocurre en tu navegador · Sin servidor
+    </footer>
+
+  </div><!-- /container -->
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script>
+    /* ================================================================
+       ESTADO GLOBAL
+       ================================================================ */
+    let selectedDocument = null;
+    let photoData = "";
+    let currentTheme = "indigo";
+    let currentColor = "#2A3B6B";
+    let autoSaveTimer = null;
+
+    const el = id => document.getElementById(id);
+    const valor = id => { const e = el(id); return e ? e.value.trim() : ""; };
+
+    // ================================================================
+    // TOASTS
+    // ================================================================
+    function toast(mensaje, tipo = "") {
+      const stack = el("toastStack");
+      const item = document.createElement("div");
+      item.className = "toast" + (tipo ? " " + tipo : "");
+      item.textContent = mensaje;
+      stack.appendChild(item);
+      setTimeout(() => item.remove(), 4200);
+    }
+
+    // ================================================================
+    // MODO OSCURO
+    // ================================================================
+    const themeToggle = el("themeToggle");
+    const themeLabel = el("themeLabel");
+    let darkMode = localStorage.getItem("dossierCV_dark") === "true";
+
+    function applyTheme(dark) {
+      document.body.classList.toggle("dark", dark);
+      themeLabel.textContent = dark ? "Claro" : "Oscuro";
+      themeToggle.innerHTML = dark ? "☀️ <span id=\"themeLabel\">Claro</span>" :
+        "🌙 <span id=\"themeLabel\">Oscuro</span>";
+      localStorage.setItem("dossierCV_dark", dark);
+      // Re-force progress bar color (CSS handles it via var)
+    }
+
+    themeToggle.addEventListener("click", () => {
+      darkMode = !darkMode;
+      applyTheme(darkMode);
+    });
+
+    applyTheme(darkMode);
+
+    // ================================================================
+    // GUARDADO AUTOMÁTICO
+    // ================================================================
+    function guardarAutomatico() {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        const datos = recogerDatos();
+        try {
+          localStorage.setItem("dossierCV_data", JSON.stringify(datos));
+        } catch (e) { /* ignore */ }
+      }, 800);
+    }
+
+    // ================================================================
+    // PROGRESO GLOBAL
+    // ================================================================
+    function actualizarProgreso() {
+      const steps = document.querySelectorAll(".step[data-step]");
+      let completados = 0;
+      steps.forEach(step => {
+        const num = parseInt(step.dataset.step);
+        let completo = false;
+        switch (num) {
+          case 1:
+            // Paso 1: si hay texto OCR o imagen cargada
+            completo = el("ocrText").value.trim().length > 0 || selectedDocument !== null;
+            break;
+          case 2:
+            // Paso 2: nombre o apellidos o email o teléfono
+            completo = valor("nombre").length > 0 || valor("apellidos").length > 0 ||
+              valor("email").length > 0 || valor("telefono").length > 0;
+            break;
+          case 3:
+            // Paso 3: al menos una experiencia, formación, certificación o referencia
+            completo = document.querySelectorAll("#experiencias .item-card").length > 0 ||
+              document.querySelectorAll("#formaciones .item-card").length > 0 ||
+              document.querySelectorAll("#certificaciones .item-card").length > 0 ||
+              document.querySelectorAll("#referencias .item-card").length > 0 ||
+              valor("idiomas").length > 0 || valor("habilidades").length > 0;
+            break;
+          case 4:
+            // Paso 4: siempre completo (tema seleccionado)
+            completo = true;
+            break;
+          case 5:
+            // Paso 5: siempre visible
+            completo = true;
+            break;
+          default:
+            completo = false;
+        }
+        if (completo) completados++;
+      });
+
+      const pct = Math.round((completados / 5) * 100);
+      el("progressBarGlobal").style.width = pct + "%";
+      el("progressStepsText").textContent = `${completados} / 5 pasos completados`;
+    }
+
+    // Hook para actualizar progreso en cada cambio
+    const originalActualizarCV = window.actualizarCV || function() {};
+    const originalAgregarExperiencia = window.agregarExperiencia || function() {};
+
+    // ================================================================
+    // ESCANEO: SELECCIÓN Y OCR
+    // ================================================================
+    const cameraInput = el("cameraInput");
+    const galleryInput = el("galleryInput");
+    const documentPreview = el("documentPreview");
+    const fileNameEl = el("fileName");
+    const ocrButton = el("ocrButton");
+    const scannerZone = el("scannerZone");
+
+    cameraInput.addEventListener("change", async function() {
+      if (!this.files.length) return;
+      seleccionarDocumento(this.files[0]);
+      await ejecutarOCR(this.files[0]);
+    });
+
+    galleryInput.addEventListener("change", function() {
+      if (!this.files.length) return;
+      seleccionarDocumento(this.files[0]);
+    });
+
+    ["dragenter", "dragover"].forEach(evt =>
+      scannerZone.addEventListener(evt, e => { e.preventDefault();
+        scannerZone.classList.add("drag-over"); })
+    );
+    ["dragleave", "drop"].forEach(evt =>
+      scannerZone.addEventListener(evt, e => { e.preventDefault();
+        scannerZone.classList.remove("drag-over"); })
+    );
+    scannerZone.addEventListener("drop", e => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) { toast("Suelta una imagen JPG o PNG.", "error"); return; }
+      seleccionarDocumento(file);
+    });
+
+    function seleccionarDocumento(file) {
+      selectedDocument = file;
+      fileNameEl.textContent = "Archivo: " + file.name;
+      if (file.type.startsWith("image/")) {
+        documentPreview.src = URL.createObjectURL(file);
+        documentPreview.style.display = "block";
+      }
+      guardarAutomatico();
+      actualizarProgreso();
+    }
+
+    ocrButton.addEventListener("click", async function() {
+      if (!selectedDocument) { toast("Primero haz una foto o selecciona una imagen.", "error"); return; }
+      await ejecutarOCR(selectedDocument);
+    });
+
+    async function ejecutarOCR(file) {
+      if (!file.type.startsWith("image/")) { toast("Selecciona una imagen JPG o PNG.", "error"); return; }
+
+      const progressArea = el("progressArea");
+      const progressBar = el("progressBar");
+      const status = el("ocrStatus");
+
+      progressArea.style.display = "block";
+      progressBar.style.width = "0%";
+      ocrButton.disabled = true;
+
+      try {
+        status.textContent = "Preparando lectura…";
+
+        const result = await Tesseract.recognize(file, "spa+eng", {
+          logger: info => {
+            if (typeof info.progress === "number") {
+              const percent = Math.round(info.progress * 100);
+              progressBar.style.width = percent + "%";
+              status.textContent = "Analizando: " + percent + "%";
+            }
+          }
+        });
+
+        const text = result.data.text;
+        el("ocrText").value = text;
+        progressBar.style.width = "100%";
+        status.textContent = "Documento leído correctamente ✅";
+        toast("Documento leído. Revisa los datos detectados.", "ok");
+        analizarTexto(text);
+        guardarAutomatico();
+        actualizarProgreso();
+
+      } catch (error) {
+        console.error(error);
+        status.textContent = "No se pudo leer el documento";
+        toast("No se pudo leer el documento. Prueba con más luz o menos reflejos.", "error");
+      } finally {
+        ocrButton.disabled = false;
+      }
+    }
+
+    // ================================================================
+    // ANALIZADOR DE TEXTO (mejor detección)
+    // ================================================================
+    function analizarTexto(texto) {
+      const original = texto || "";
+      const mayus = original.toUpperCase();
+
+      // Documento: NIE o DNI
+      const nieMatch = mayus.match(/\b[XYZ]\s?\d{7,9}\s?[A-Z]\b/);
+      const dniMatch = mayus.match(/\b\d{8}\s?[A-Z]\b/);
+      const docMatch = nieMatch || dniMatch;
+      if (docMatch && !valor("nie")) {
+        el("nie").value = docMatch[0].replace(/\s/g, "");
+      }
+
+      // Teléfono
+      const telMatch = original.match(/(?:\+34[\s-]?)?[6789]\d{2}[\s-]?\d{3}[\s-]?\d{3}\b/);
+      if (telMatch && !valor("telefono")) el("telefono").value = telMatch[0].trim();
+
+      // Email
+      const emailMatch = original.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      if (emailMatch && !valor("email")) el("email").value = emailMatch[0];
+
+      // Nombre y apellidos – heurística mejorada
+      const nombreApellidos = extraerNombreApellidosMejorado(original);
+      if (nombreApellidos) {
+        if (!valor("nombre")) el("nombre").value = nombreApellidos.nombre;
+        if (!valor("apellidos")) el("apellidos").value = nombreApellidos.apellidos;
+      }
+
+      actualizarCV();
+      guardarAutomatico();
+      actualizarProgreso();
+    }
+
+    function extraerNombreApellidosMejorado(texto) {
+      const lineas = texto.split(/\r?\n/).map(x => x.trim()).filter(x => x.length > 3);
+      // Buscar línea que contenga "APELLIDOS" o "SURNAME"
+      for (let i = 0; i < lineas.length; i++) {
+        const mayus = lineas[i].toUpperCase();
+        if (/APELLID|SURNAME/.test(mayus)) {
+          for (let j = i + 1; j < Math.min(i + 3, lineas.length); j++) {
+            const candidata = lineas[j];
+            if (!candidata) continue;
+            const limpio = candidata.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g, "").trim();
+            const palabras = limpio.split(/\s+/).filter(Boolean);
+            if (palabras.length >= 2 && palabras.length <= 5 && limpio.length >= 4) {
+              // Intentar separar: si la última palabra es corta (≤6) y el resto >1, puede ser nombre
+              const nombre = palabras.pop() || "";
+              const apellidos = palabras.join(" ");
+              if (nombre.length > 0 && apellidos.length > 0) {
+                return { nombre, apellidos };
+              }
+            }
+          }
+          break;
+        }
+      }
+
+      // Fallback: buscar línea que parezca nombre (sin etiquetas)
+      const prohibidas = ["NOMBRE", "APELLIDOS", "SURNAME", "FORENAME", "NIE", "DOCUMENTO", "FECHA", "NACIMIENTO",
+        "BIRTH", "EXPEDICION", "CADUCIDAD", "SEXO", "DNI", "ESPAÑA", "REINO", "PERMISO", "RESIDENCIA",
+        "TELÉFONO", "EMAIL", "DIRECCIÓN", "CIUDAD", "PROFESIÓN"
+      ];
+      for (const linea of lineas) {
+        const mayus = linea.toUpperCase();
+        if (prohibidas.some(p => mayus.includes(p))) continue;
+        const limpio = linea.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g, "").trim();
+        const palabras = limpio.split(/\s+/).filter(Boolean);
+        if (palabras.length >= 2 && palabras.length <= 5 && limpio.length >= 6) {
+          // Tomar la primera palabra como nombre y el resto apellidos
+          const nombre = palabras.shift() || "";
+          const apellidos = palabras.join(" ");
+          return { nombre, apellidos };
+        }
+      }
+      return null;
+    }
+
+    // ================================================================
+    // VALIDACIÓN
+    // ================================================================
+    el("email").addEventListener("blur", () => {
+      const v = valor("email");
+      const msg = el("emailMsg");
+      if (!v) { msg.textContent = ""; return; }
+      const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      msg.textContent = ok ? "✅" : "Revisa el formato del correo.";
+      msg.className = "msg" + (ok ? " ok" : " error");
+      guardarAutomatico();
+    });
+
+    el("telefono").addEventListener("blur", () => {
+      const v = valor("telefono");
+      const msg = el("telefonoMsg");
+      if (!v) { msg.textContent = ""; return; }
+      const ok = /^(\+?\d[\d\s-]{7,14}\d)$/.test(v);
+      msg.textContent = ok ? "✅" : "Revisa el formato del teléfono.";
+      msg.className = "msg" + (ok ? " ok" : " error");
+      guardarAutomatico();
+    });
+
+    // ================================================================
+    // ITEMS DINÁMICOS (con drag & drop)
+    // ================================================================
+    function escapeHTML(texto) {
+      return String(texto || "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Configurar drag & drop en un contenedor
+    function initSortable(containerId) {
+      const container = el(containerId);
+      if (!container) return;
+      let dragItem = null;
+
+      container.addEventListener("dragstart", (e) => {
+        const item = e.target.closest(".item-card");
+        if (!item) return;
+        dragItem = item;
+        item.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", "");
+      });
+
+      container.addEventListener("dragend", (e) => {
+        const item = e.target.closest(".item-card");
+        if (item) item.classList.remove("dragging");
+        dragItem = null;
+      });
+
+      container.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const afterElement = getDragAfterElement(container, e.clientY);
+        const currentItem = e.target.closest(".item-card");
+        if (!currentItem || currentItem === dragItem) return;
+        if (afterElement == null) {
+          container.appendChild(dragItem);
+        } else {
+          container.insertBefore(dragItem, afterElement);
+        }
+      });
+
+      container.addEventListener("drop", (e) => {
+        e.preventDefault();
+        // Reorden completado
+        guardarAutomatico();
+        actualizarCV();
+      });
+    }
+
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll(".item-card:not(.dragging)")];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Funciones para agregar items (con drag handle)
+    function crearItemCard(titulo, camposHTML, containerId, emptyId) {
+      const container = el(containerId);
+      el(emptyId).style.display = "none";
+      const item = document.createElement("div");
+      item.className = "item-card";
+      item.draggable = true;
+      item.innerHTML = `
+        <div class="drag-handle" draggable="false">⠿</div>
+        <div class="item-head">
+          <strong>${titulo}</strong>
+          <button type="button" class="btn btn-danger btn-sm" onclick="eliminarItem(this,'${containerId}','${emptyId}')">Eliminar</button>
+        </div>
+        ${camposHTML}
+      `;
+      container.appendChild(item);
+      item.querySelectorAll("input, textarea").forEach(e => e.addEventListener("input", () => {
+        actualizarCV();
+        guardarAutomatico();
+        actualizarProgreso();
+      }));
+      // Inicializar drag para este item (ya está en el contenedor)
+      actualizarCV();
+      guardarAutomatico();
+      actualizarProgreso();
+      return item;
+    }
+
+    function agregarExperiencia(datos = {}) {
+      const campos = `
+        <div class="form-grid" style="gap:0.8rem;">
+          <div class="field"><label>Puesto</label><input class="exp-puesto" value="${escapeHTML(datos.puesto || "")}" placeholder="Desarrollador" /></div>
+          <div class="field"><label>Empresa</label><input class="exp-empresa" value="${escapeHTML(datos.empresa || "")}" placeholder="Empresa S.L." /></div>
+        </div>
+        <div class="form-grid" style="gap:0.8rem;">
+          <div class="field"><label>Fecha inicio</label><input class="exp-inicio" value="${escapeHTML(datos.inicio || "")}" placeholder="2022" /></div>
+          <div class="field"><label>Fecha fin</label><input class="exp-fin" value="${escapeHTML(datos.fin || "")}" placeholder="Actualidad" /></div>
+        </div>
+        <div class="field"><label>Funciones</label><textarea class="exp-descripcion" placeholder="Describe tus funciones…">${escapeHTML(datos.descripcion || "")}</textarea></div>
+      `;
+      crearItemCard("Experiencia", campos, "experiencias", "expEmpty");
+    }
+
+    function agregarFormacion(datos = {}) {
+      const campos = `
+        <div class="form-grid" style="gap:0.8rem;">
+          <div class="field"><label>Título</label><input class="form-titulo" value="${escapeHTML(datos.titulo || "")}" placeholder="Grado / Curso" /></div>
+          <div class="field"><label>Centro</label><input class="form-centro" value="${escapeHTML(datos.centro || "")}" placeholder="Centro de estudios" /></div>
+        </div>
+        <div class="field"><label>Año</label><input class="form-ano" value="${escapeHTML(datos.ano || "")}" placeholder="2024" /></div>
+      `;
+      crearItemCard("Formación", campos, "formaciones", "formEmpty");
+    }
+
+    function agregarCertificacion(datos = {}) {
+      const campos = `
+        <div class="form-grid" style="gap:0.8rem;">
+          <div class="field"><label>Título</label><input class="cert-titulo" value="${escapeHTML(datos.titulo || "")}" placeholder="Certificado profesional" /></div>
+          <div class="field"><label>Entidad</label><input class="cert-entidad" value="${escapeHTML(datos.entidad || "")}" placeholder="Entidad / plataforma" /></div>
+        </div>
+        <div class="field"><label>Año</label><input class="cert-ano" value="${escapeHTML(datos.ano || "")}" placeholder="2024" /></div>
+      `;
+      crearItemCard("Certificación", campos, "certificaciones", "certEmpty");
+    }
+
+    function agregarReferencia(datos = {}) {
+      const campos = `
+        <div class="form-grid" style="gap:0.8rem;">
+          <div class="field"><label>Nombre</label><input class="ref-nombre" value="${escapeHTML(datos.nombre || "")}" placeholder="Nombre y apellidos" /></div>
+          <div class="field"><label>Relación / cargo</label><input class="ref-relacion" value="${escapeHTML(datos.relacion || "")}" placeholder="Antiguo responsable" /></div>
+        </div>
+        <div class="field"><label>Contacto</label><input class="ref-contacto" value="${escapeHTML(datos.contacto || "")}" placeholder="Teléfono o email" /></div>
+      `;
+      crearItemCard("Referencia", campos, "referencias", "refEmpty");
+    }
+
+    function eliminarItem(boton, containerId, emptyId) {
+      boton.closest(".item-card").remove();
+      const container = el(containerId);
+      if (!container.querySelector(".item-card")) el(emptyId).style.display = "block";
+      actualizarCV();
+      guardarAutomatico();
+      actualizarProgreso();
+    }
+
+    // Inicializar sortables
+    initSortable("experiencias");
+    initSortable("formaciones");
+    initSortable("certificaciones");
+    initSortable("referencias");
+
+    // ================================================================
+    // FOTO
+    // ================================================================
+    const photoInput = el("photoInput");
+    photoInput.addEventListener("change", function() {
+      if (!this.files.length) return;
+      const file = this.files[0];
+      if (!file.type.startsWith("image/")) { toast("Selecciona una imagen para la foto.", "error"); return; }
+      const reader = new FileReader();
+      reader.onload = event => {
+        photoData = event.target.result;
+        el("cvPhoto").src = photoData;
+        el("cvPhoto").style.display = "block";
+        el("photoThumb").src = photoData;
+        el("photoThumb").style.display = "block";
+        el("quitarFotoBtn").style.display = "inline-flex";
+        guardarAutomatico();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function quitarFoto() {
+      photoData = "";
+      photoInput.value = "";
+      el("cvPhoto").style.display = "none";
+      el("photoThumb").style.display = "none";
+      el("quitarFotoBtn").style.display = "none";
+      guardarAutomatico();
+    }
+
+    // ================================================================
+    // ACTUALIZAR VISTA PREVIA DEL CV
+    // ================================================================
+    function actualizarCV() {
+      const nombre = valor("nombre");
+      const apellidos = valor("apellidos");
+
+      el("cvNombre").textContent = (`${nombre} ${apellidos}`).trim().toUpperCase() || "TU NOMBRE";
+      el("cvPuesto").textContent = valor("puesto") || "PROFESIONAL";
+      el("cvTelefono").textContent = valor("telefono") || "—";
+      el("cvEmail").textContent = valor("email") || "—";
+      el("cvDireccion").textContent = valor("direccion") || "—";
+      el("cvLinkedin").textContent = valor("linkedin") || "—";
+      el("cvWeb").textContent = valor("web") || "—";
+      el("cvPerfil").textContent = valor("perfil") || "Escribe tu perfil profesional.";
+      el("cvIdiomas").textContent = valor("idiomas") || "—";
+
+      actualizarLista("cvExperiencias", "#experiencias .item-card", (item) => {
+        const puesto = item.querySelector(".exp-puesto").value.trim();
+        const empresa = item.querySelector(".exp-empresa").value.trim();
+        const inicio = item.querySelector(".exp-inicio").value.trim();
+        const fin = item.querySelector(".exp-fin").value.trim();
+        const descripcion = item.querySelector(".exp-descripcion").value.trim();
+        return `
+          <div class="cv-experience">
+            <div class="cv-experience-title">${escapeHTML(puesto || "Puesto")}</div>
+            <div class="cv-company">${escapeHTML(empresa)}</div>
+            <div class="cv-date">${escapeHTML(inicio)}${inicio || fin ? " — " : ""}${escapeHTML(fin)}</div>
+            <div><p>${escapeHTML(descripcion || "Descripción.")}</p></div>
+          </div>
+        `;
+      }, "Añade tu experiencia profesional.");
+
+      actualizarLista("cvFormaciones", "#formaciones .item-card", (item) => {
+        const titulo = item.querySelector(".form-titulo").value.trim();
+        const centro = item.querySelector(".form-centro").value.trim();
+        const ano = item.querySelector(".form-ano").value.trim();
+        return `
+          <div class="cv-experience">
+            <div class="cv-experience-title">${escapeHTML(titulo || "Formación")}</div>
+            <div class="cv-company">${escapeHTML(centro)}</div>
+            <div class="cv-date">${escapeHTML(ano)}</div>
+          </div>
+        `;
+      }, "Añade tu formación.");
+
+      actualizarLista("cvCertificaciones", "#certificaciones .item-card", (item) => {
+        const titulo = item.querySelector(".cert-titulo").value.trim();
+        const entidad = item.querySelector(".cert-entidad").value.trim();
+        const ano = item.querySelector(".cert-ano").value.trim();
+        return `
+          <div class="cv-experience">
+            <div class="cv-experience-title">${escapeHTML(titulo || "Certificación")}</div>
+            <div class="cv-company">${escapeHTML(entidad)}</div>
+            <div class="cv-date">${escapeHTML(ano)}</div>
+          </div>
+        `;
+      }, "Añade certificaciones si tienes.");
+
+      actualizarLista("cvReferencias", "#referencias .item-card", (item) => {
+        const nombre = item.querySelector(".ref-nombre").value.trim();
+        const relacion = item.querySelector(".ref-relacion").value.trim();
+        const contacto = item.querySelector(".ref-contacto").value.trim();
+        return `
+          <div class="cv-experience">
+            <div class="cv-experience-title">${escapeHTML(nombre || "Referencia")}</div>
+            <div class="cv-company">${escapeHTML(relacion)}</div>
+            <div class="cv-date">${escapeHTML(contacto)}</div>
+          </div>
+        `;
+      }, "Disponibles a petición.");
+
+      // Habilidades
+      const container = el("cvHabilidades");
+      const habilidades = valor("habilidades").split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
+      container.innerHTML = "";
+      if (!habilidades.length) { container.textContent = "—"; return; }
+      habilidades.forEach(h => {
+        const span = document.createElement("span");
+        span.className = "badge";
+        span.textContent = h;
+        container.appendChild(span);
+      });
+
+      actualizarProgreso();
+    }
+
+    function actualizarLista(cvId, selector, renderFn, emptyMsg) {
+      const container = el(cvId);
+      const items = document.querySelectorAll(selector);
+      container.innerHTML = "";
+      if (!items.length) { container.textContent = emptyMsg; return; }
+      items.forEach(item => {
+        container.insertAdjacentHTML("beforeend", renderFn(item));
+      });
+    }
+
+    // ================================================================
+    // TEMAS (colores)
+    // ================================================================
+    function cambiarTema(tema, color, elemento) {
+      currentTheme = tema;
+      currentColor = color;
+      el("cv").style.setProperty("--cv-accent", color);
+      document.querySelectorAll(".template-item").forEach(x => x.classList.remove("active"));
+      elemento.classList.add("active");
+      guardarAutomatico();
+    }
+
+    // ================================================================
+    // GUARDAR Y CARGAR COPIA (JSON + localStorage)
+    // ================================================================
+    function recogerDatos() {
+      return {
+        nombre: valor("nombre"),
+        apellidos: valor("apellidos"),
+        nie: valor("nie"),
+        telefono: valor("telefono"),
+        email: valor("email"),
+        direccion: valor("direccion"),
+        linkedin: valor("linkedin"),
+        web: valor("web"),
+        puesto: valor("puesto"),
+        perfil: valor("perfil"),
+        idiomas: valor("idiomas"),
+        habilidades: valor("habilidades"),
+        experiencias: Array.from(document.querySelectorAll("#experiencias .item-card")).map(item => ({
+          puesto: item.querySelector(".exp-puesto").value,
+          empresa: item.querySelector(".exp-empresa").value,
+          inicio: item.querySelector(".exp-inicio").value,
+          fin: item.querySelector(".exp-fin").value,
+          descripcion: item.querySelector(".exp-descripcion").value
+        })),
+        formaciones: Array.from(document.querySelectorAll("#formaciones .item-card")).map(item => ({
+          titulo: item.querySelector(".form-titulo").value,
+          centro: item.querySelector(".form-centro").value,
+          ano: item.querySelector(".form-ano").value
+        })),
+        certificaciones: Array.from(document.querySelectorAll("#certificaciones .item-card")).map(item => ({
+          titulo: item.querySelector(".cert-titulo").value,
+          entidad: item.querySelector(".cert-entidad").value,
+          ano: item.querySelector(".cert-ano").value
+        })),
+        referencias: Array.from(document.querySelectorAll("#referencias .item-card")).map(item => ({
+          nombre: item.querySelector(".ref-nombre").value,
+          relacion: item.querySelector(".ref-relacion").value,
+          contacto: item.querySelector(".ref-contacto").value
+        })),
+        photo: photoData,
+        theme: currentTheme,
+        color: currentColor,
+        darkMode: darkMode
+      };
+    }
+
+    function exportarJSON() {
+      const datos = recogerDatos();
+      const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "cv-datos-" + (valor("nombre") || "borrador").replace(/\s+/g, "-").toLowerCase() + ".json";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("Copia guardada como archivo JSON.", "ok");
+    }
+
+    el("importInput").addEventListener("change", function() {
+      if (!this.files.length) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const datos = JSON.parse(e.target.result);
+          cargarDatos(datos);
+          toast("Copia cargada correctamente.", "ok");
+        } catch (err) {
+          console.error(err);
+          toast("El archivo no es una copia válida.", "error");
+        }
+      };
+      reader.readAsText(this.files[0]);
+      this.value = "";
+    });
+
+    function cargarDatos(datos) {
+      const campos = ["nombre", "apellidos", "nie", "telefono", "email", "direccion", "linkedin", "web", "puesto",
+        "perfil", "idiomas", "habilidades"
+      ];
+      campos.forEach(id => { if (datos[id] !== undefined) el(id).value = datos[id]; });
+
+      // Limpiar items dinámicos
+      document.querySelectorAll("#experiencias .item-card").forEach(i => i.remove());
+      document.querySelectorAll("#formaciones .item-card").forEach(i => i.remove());
+      document.querySelectorAll("#certificaciones .item-card").forEach(i => i.remove());
+      document.querySelectorAll("#referencias .item-card").forEach(i => i.remove());
+      el("expEmpty").style.display = "block";
+      el("formEmpty").style.display = "block";
+      el("certEmpty").style.display = "block";
+      el("refEmpty").style.display = "block";
+
+      if (Array.isArray(datos.experiencias)) datos.experiencias.forEach(exp => agregarExperiencia(exp));
+      if (Array.isArray(datos.formaciones)) datos.formaciones.forEach(f => agregarFormacion(f));
+      if (Array.isArray(datos.certificaciones)) datos.certificaciones.forEach(c => agregarCertificacion(c));
+      if (Array.isArray(datos.referencias)) datos.referencias.forEach(r => agregarReferencia(r));
+
+      if (datos.photo) {
+        photoData = datos.photo;
+        el("cvPhoto").src = photoData;
+        el("cvPhoto").style.display = "block";
+        el("photoThumb").src = photoData;
+        el("photoThumb").style.display = "block";
+        el("quitarFotoBtn").style.display = "inline-flex";
+      } else {
+        quitarFoto();
+      }
+
+      if (datos.theme && datos.color) {
+        const target = document.querySelector(`.template-item[data-theme="${datos.theme}"]`);
+        if (target) cambiarTema(datos.theme, datos.color, target);
+      }
+
+      if (datos.darkMode !== undefined) {
+        darkMode = datos.darkMode;
+        applyTheme(darkMode);
+      }
+
+      actualizarCV();
+      guardarAutomatico();
+      actualizarProgreso();
+    }
+
+    // ================================================================
+    // PDF (multipágina)
+    // ================================================================
+    async function descargarPDF() {
+      actualizarCV();
+      const cv = el("cv");
+      toast("Generando PDF…");
+
+      try {
+        const canvas = await html2canvas(cv, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const imgData = canvas.toDataURL("image/png");
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        const nombre = valor("nombre") || "CV";
+        pdf.save("CV-" + nombre.replace(/\s+/g, "-") + ".pdf");
+        toast("PDF descargado.", "ok");
+
+      } catch (error) {
+        console.error(error);
+        toast("No se pudo crear el PDF.", "error");
+      }
+    }
+
+    // ================================================================
+    // BORRAR TODO
+    // ================================================================
+    function limpiarTodo() {
+      if (!confirm("¿Quieres borrar todos los datos y empezar de nuevo? Si quieres conservarlos, cancela y usa antes “Guardar copia”."))
+        return;
+
+      document.querySelectorAll("input, textarea").forEach(e => { if (e.type !== "file") e.value = ""; });
+      document.querySelectorAll("#experiencias .item-card, #formaciones .item-card, #certificaciones .item-card, #referencias .item-card")
+        .forEach(i => i.remove());
+      el("expEmpty").style.display = "block";
+      el("formEmpty").style.display = "block";
+      el("certEmpty").style.display = "block";
+      el("refEmpty").style.display = "block";
+      quitarFoto();
+      selectedDocument = null;
+      fileNameEl.textContent = "Ningún archivo seleccionado";
+      documentPreview.style.display = "none";
+      el("ocrText").value = "";
+      cambiarTema("indigo", "#2A3B6B", document.querySelector('.template-item[data-theme="indigo"]'));
+      localStorage.removeItem("dossierCV_data");
+      actualizarCV();
+      actualizarProgreso();
+      toast("Datos borrados.");
+    }
+
+    // ================================================================
+    // CARGA AUTOMÁTICA DESDE LOCALSTORAGE
+    // ================================================================
+    function cargarDesdeLocalStorage() {
+      const stored = localStorage.getItem("dossierCV_data");
+      if (!stored) return;
+      try {
+        const datos = JSON.parse(stored);
+        cargarDatos(datos);
+        toast("Datos recuperados automáticamente.", "ok");
+      } catch (e) { /* ignore */ }
+    }
+
+    // ================================================================
+    // INICIALIZACIÓN
+    // ================================================================
+    document.querySelectorAll("input, textarea").forEach(e => e.addEventListener("input", () => {
+      actualizarCV();
+      guardarAutomatico();
+      actualizarProgreso();
+    }));
+
+    // Cargar datos guardados
+    cargarDesdeLocalStorage();
+
+    // Primera actualización
+    actualizarCV();
+    actualizarProgreso();
+
+    // Exponer funciones globales para uso en HTML
+    window.agregarExperiencia = agregarExperiencia;
+    window.agregarFormacion = agregarFormacion;
+    window.agregarCertificacion = agregarCertificacion;
+    window.agregarReferencia = agregarReferencia;
+    window.eliminarItem = eliminarItem;
+    window.quitarFoto = quitarFoto;
+    window.cambiarTema = cambiarTema;
+    window.exportarJSON = exportarJSON;
+    window.descargarPDF = descargarPDF;
+    window.limpiarTodo = limpiarTodo;
+    window.actualizarCV = actualizarCV;
+  </script>
+</body>
+</html>
