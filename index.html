@@ -20,6 +20,75 @@
     /* ====================================================
        TOKENS (claro / oscuro)
        ==================================================== */
+
+
+
+    /* =====================================================
+   POPUP REHMAN EXPRESS MARKET - CADA 5 MINUTOS
+   ===================================================== */
+
+#popupRehman {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.65);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#popupRehman.show {
+  display: flex;
+}
+
+.popup-rehman-box {
+  width: 100%;
+  max-width: 430px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 25px 70px rgba(0,0,0,.35);
+  animation: popupRehmanEntrada .3s ease;
+}
+
+.popup-rehman-logo {
+  font-size: 52px;
+  margin-bottom: 10px;
+}
+
+.popup-rehman-box h2 {
+  margin: 0 0 10px;
+}
+
+.popup-rehman-box p {
+  color: var(--text-secondary);
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+.popup-rehman-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@keyframes popupRehmanEntrada {
+  from {
+    opacity: 0;
+    transform: scale(.9) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
     :root {
       --bg: #f4f2ed;
       --surface: #ffffff;
@@ -2719,6 +2788,108 @@
     window.descargarPDF = descargarPDF;
     window.limpiarTodo = limpiarTodo;
     window.actualizarCV = actualizarCV;
+
+
+
+    // =====================================================
+// POPUP REHMAN EXPRESS MARKET CADA 5 MINUTOS
+// =====================================================
+
+const popupRehman = document.getElementById("popupRehman");
+
+function mostrarPopupRehman() {
+  if (!popupRehman) return;
+
+  popupRehman.classList.add("show");
+  popupRehman.setAttribute("aria-hidden", "false");
+}
+
+function cerrarPopupRehman() {
+  if (!popupRehman) return;
+
+  popupRehman.classList.remove("show");
+  popupRehman.setAttribute("aria-hidden", "true");
+}
+
+// Primera aparición: después de 5 minutos
+setTimeout(() => {
+
+  mostrarPopupRehman();
+
+  // Después vuelve a aparecer cada 5 minutos
+  setInterval(() => {
+    mostrarPopupRehman();
+  }, 5 * 60 * 1000);
+
+}, 5 * 60 * 1000);
+
+
+// Cerrar al pulsar fuera de la ventana
+if (popupRehman) {
+  popupRehman.addEventListener("click", function(event) {
+
+    if (event.target === popupRehman) {
+      cerrarPopupRehman();
+    }
+
+  });
+}
+
+
+// Cerrar también con la tecla ESC
+document.addEventListener("keydown", function(event) {
+
+  if (event.key === "Escape") {
+    cerrarPopupRehman();
+  }
+
+});
   </script>
+  <!-- =====================================================
+     POPUP REHMAN EXPRESS MARKET
+     ===================================================== -->
+
+<div id="popupRehman" aria-hidden="true">
+  <div class="popup-rehman-box" role="dialog" aria-modal="true">
+
+    <div class="popup-rehman-logo">🏪</div>
+
+    <h2>Rehman Express Market</h2>
+
+    <p>
+      Transferencias · Recargas · Productos latinos ·
+      Tarjetas SIM · Imprenta
+    </p>
+
+    <div class="popup-rehman-buttons">
+
+      <a
+        href="https://rehmanexpressmarket.github.io/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary"
+      >
+        🛒 Visitar tienda
+      </a>
+
+      <a
+        href="tel:+34941640545"
+        class="btn btn-outline"
+      >
+        📞 Llamar
+      </a>
+
+      <button
+        type="button"
+        class="btn btn-ghost"
+        onclick="cerrarPopupRehman()"
+      >
+        Cerrar
+      </button>
+
+    </div>
+
+  </div>
+</div>
 </body>
 </html>
