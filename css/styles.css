@@ -1379,6 +1379,51 @@ body.dark .btn-danger:hover {
 }
 
 /* ====================================================
+   CORRECCIÓN: fotos sin tamaño controlado y texto
+   que se salía de los límites de cada plantilla
+   ==================================================== */
+
+/* Tamaño base de la foto para TODAS las plantillas.
+   Antes solo "Moderno" y "Foto grande" tenían medida propia,
+   así que en el resto la imagen se mostraba a su tamaño
+   original (podía ocupar cientos de píxeles). */
+.cv-photo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* En la plantilla Minimalista la cabecera no tiene fondo de
+   color, así que un borde blanco no se ve; usamos uno neutro */
+.cv-minimal .cv-photo {
+  border-color: var(--border);
+  background: var(--card);
+}
+
+/* Los hijos directos de una fila/columna de grid o flex, por
+   defecto, no se encogen por debajo de su contenido (min-width:
+   auto). Con nombres de empresa largos, URLs o correos sin
+   espacios, eso empujaba la columna más allá del ancho fijado
+   y el texto acababa saliéndose del CV. Forzamos min-width:0
+   para que el texto pueda partirse en vez de desbordar. */
+#cv .cv-header,
+#cv .cv-header > div,
+.cv-sidebar,
+.cv-main {
+  min-width: 0;
+}
+
+#cv,
+#cv * {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ====================================================
    PRINT
    ==================================================== */
 @media print {
