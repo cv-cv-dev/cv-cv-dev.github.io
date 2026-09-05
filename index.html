@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DossierCV · 10 estilos de CV</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600;700&family=Roboto+Slab:wght@400;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">📄</div>
+        <div>
+          <h1>Dossier<span>CV</span></h1>
+          <div class="tagline">10 estilos de CV · Elige el tuyo</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="header-badge">
+          <span class="dot"></span>
+          Procesamiento local · sin servidor
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema oscuro/claro">
+          🌙 <span id="themeLabel">Oscuro</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- PROGRESO GLOBAL -->
+    <div class="progress-global" id="progressGlobal">
+      <span class="label">📊 Progreso</span>
+      <div class="track">
+        <div class="bar" id="progressBarGlobal" style="width:0%;"></div>
+      </div>
+      <span class="steps-text" id="progressStepsText">0 / 5 pasos completados</span>
+    </div>
+
+    <!-- PASOS -->
+    <div class="steps">
+
+      <!-- PASO 1: ESCANER -->
+      <section class="step" data-step="1">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <div>
+            <h2>Escanea tu documento</h2>
+            <div class="step-hint">Usa buena luz y evita reflejos para una lectura clara.</div>
+          </div>
+        </div>
+
+        <div class="scanner" id="scannerZone">
+          <div class="scanner-icon">🪪</div>
+          <h3>Arrastra una imagen o haz una foto</h3>
+          <p class="hint">Admite JPG y PNG. La imagen nunca sale de tu dispositivo.</p>
+
+          <div class="scanner-actions">
+            <label for="cameraInput" class="btn btn-primary">📷 Abrir cámara</label>
+            <input id="cameraInput" class="file-input" type="file" accept="image/*" capture="environment" />
+
+            <label for="galleryInput" class="btn btn-outline">🖼️ Elegir imagen</label>
+            <input id="galleryInput" class="file-input" type="file" accept="image/*" />
+          </div>
+
+          <div id="fileName" class="file-name">Ningún archivo seleccionado</div>
+          <img id="documentPreview" class="document-preview" alt="Vista previa del documento" />
+        </div>
+
+        <div id="progressArea" class="progress-area">
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+          <div id="ocrStatus" class="status-text">Preparando lectura…</div>
+        </div>
+
+        <div class="actions-row">
+          <button id="ocrButton" class="btn btn-primary">🔍 Leer documento</button>
+        </div>
+
+        <div class="field" style="margin-top:1.2rem;">
+          <label for="ocrText">Texto reconocido</label>
+          <textarea id="ocrText" placeholder="El texto detectado aparecerá aquí…" rows="3"></textarea>
+        </div>
+
+        <div class="privacy-note">
+          <span class="icon">🔒</span>
+          El reconocimiento de texto se ejecuta completamente en tu navegador. No se envía nada a ningún servidor.
+        </div>
+      </section>
+
+      <!-- PASO 2 + 3: DOS COLUMNAS -->
+      <div class="two-col-grid">
+
+        <!-- PASO 2: DATOS PERSONALES -->
+        <section class="step" data-step="2">
+          <div class="step-header">
+            <span class="step-number">2</span>
+            <div>
+              <h2>Datos personales</h2>
+              <div class="step-hint">Revisa lo detectado y completa lo que falte.</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field"><label>Nombre</label><input id="nombre" placeholder="María" /></div>
+            <div class="field"><label>Apellidos</label><input id="apellidos" placeholder="González Pérez" /></div>
+          </div>
+
+          <div class="field" style="margin-top:0.2rem;"><label>NIE / Documento</label><input id="nie" placeholder="X1234567A" /></div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Teléfono</label>
+              <input id="telefono" type="tel" placeholder="+34 600 000 000" />
+              <div class="msg" id="telefonoMsg"></div>
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input id="email" type="email" placeholder="correo@email.com" />
+              <div class="msg" id="emailMsg"></div>
+            </div>
+          </div>
+
+          <div class="field"><label>Ciudad / Ubicación</label><input id="direccion" placeholder="Madrid, España" /></div>
+
+          <div class="form-grid">
+            <div class="field"><label>LinkedIn</label><input id="linkedin" placeholder="linkedin.com/in/tu-perfil" /></div>
+            <div class="field"><label>Web / Portfolio</label><input id="web" placeholder="tuweb.com" /></div>
+          </div>
+
+          <div class="field"><label>Profesión</label><input id="puesto" placeholder="Desarrolladora Frontend" /></div>
+          <div class="field"><label>Perfil profesional</label><textarea id="perfil" placeholder="Breve descripción de tu experiencia y objetivos…"></textarea></div>
+
+          <div class="privacy-note">
+            <span class="icon">🛡️</span>
+            Por privacidad, esta aplicación nunca incluye el número de documento completo en el CV, aunque lo detecte.
+          </div>
+        </section>
+
+        <!-- PASO 3: TRAYECTORIA -->
+        <section class="step" data-step="3">
+          <div class="step-header">
+            <span class="step-number">3</span>
+            <div>
+              <h2>Trayectoria</h2>
+              <div class="step-hint">Añade experiencia, formación, certificaciones y más.</div>
+            </div>
+          </div>
+
+          <!-- Experiencia -->
+          <div class="subhead">💼 Experiencia</div>
+          <p class="empty-hint" id="expEmpty">Aún no has añadido ninguna experiencia.</p>
+          <div id="experiencias" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarExperiencia()">+ Añadir experiencia</button>
+
+          <hr class="divider" />
+
+          <!-- Formación -->
+          <div class="subhead">🎓 Formación</div>
+          <p class="empty-hint" id="formEmpty">Aún no has añadido ninguna formación.</p>
+          <div id="formaciones" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarFormacion()">+ Añadir formación</button>
+
+          <hr class="divider" />
+
+          <!-- Certificaciones -->
+          <div class="subhead">📜 Certificaciones</div>
+          <p class="empty-hint" id="certEmpty">Aún no has añadido ninguna certificación.</p>
+          <div id="certificaciones" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarCertificacion()">+ Añadir certificación</button>
+
+          <hr class="divider" />
+
+          <!-- Referencias -->
+          <div class="subhead">📇 Referencias</div>
+          <p class="empty-hint" id="refEmpty">Aún no has añadido referencias.</p>
+          <div id="referencias" class="sortable-container"></div>
+          <button class="btn btn-ghost btn-sm" onclick="agregarReferencia()">+ Añadir referencia</button>
+
+          <hr class="divider" />
+
+          <div class="field"><label>Idiomas</label><textarea id="idiomas" placeholder="Español: Nativo&#10;Inglés: B2&#10;Francés: A2"></textarea></div>
+
+          <div class="field"><label>Habilidades</label><textarea id="habilidades" placeholder="React, TypeScript, trabajo en equipo, comunicación…"></textarea></div>
+
+          <div class="field">
+            <label>Foto para el CV (opcional)</label>
+            <div class="photo-row">
+              <img id="photoThumb" class="photo-thumb" alt="Foto seleccionada" />
+              <input id="photoInput" type="file" accept="image/*" style="flex:1;" />
+              <button type="button" class="btn btn-danger btn-sm" id="quitarFotoBtn" style="display:none;" onclick="quitarFoto()">Quitar</button>
+            </div>
+          </div>
+
+          <!-- PUBLICIDAD LATERAL -->
+          <div style="
+            background: var(--card, #fcfaf7);
+            border: 1px solid var(--border, #e3dfd7);
+            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            margin-top: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            box-shadow: var(--shadow, 0 4px 16px rgba(0,0,0,0.04));
+          ">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.8rem;">🏪</span>
+              <div>
+                <div style="font-weight: 700; font-size: 1rem; color: var(--text, #1e1b17);">Rehman Express Market</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary, #5f5950);">Transferencias · Recargas · Imprenta</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="https://rehmanexpressmarket.github.io/" target="_blank" style="
+                background: var(--accent, #a4533e);
+                color: #fff;
+                padding: 0.35rem 1rem;
+                border-radius: 6px;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 0.8rem;
+                flex: 1;
+                text-align: center;
+                transition: background 0.2s;
+              " onmouseover="this.style.background='#7d3a2a'" onmouseout="this.style.background='var(--accent, #a4533e)'">
+                Visitar tienda
+              </a>
+              <a href="tel:+34941640545" style="
+                background: transparent;
+                border: 1px solid var(--border, #e3dfd7);
+                color: var(--text, #1e1b17);
+                padding: 0.35rem 1rem;
+                border-radius: 6px;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 0.8rem;
+                flex: 1;
+                text-align: center;
+              ">
+                📞 941 64 05 45
+              </a>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted, #8f887e); text-align: center;">
+              📍 Av. España, 2 · Logroño
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+      <!-- PASO 4: DISEÑO (estilo + color) -->
+      <section class="step" data-step="4">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <div>
+            <h2>Diseño del CV</h2>
+            <div class="step-hint">Elige el estilo y el color que mejor reflejen tu personalidad.</div>
+          </div>
+        </div>
+
+        <!-- Selector de estilos -->
+        <div style="margin-bottom:1.5rem;">
+          <h3 style="font-family:'Inter',sans-serif; font-weight:600; font-size:0.9rem; margin-bottom:0.6rem;">🎨 Elige un estilo de CV</h3>
+          <div class="style-grid" id="styleGrid">
+            <div class="style-item active" data-style="classic" onclick="cambiarEstilo('classic', this)">📄 Clásico</div>
+            <div class="style-item" data-style="modern" onclick="cambiarEstilo('modern', this)">🚀 Moderno</div>
+            <div class="style-item" data-style="minimal" onclick="cambiarEstilo('minimal', this)">✨ Minimalista</div>
+            <div class="style-item" data-style="creative" onclick="cambiarEstilo('creative', this)">🎨 Creativo</div>
+            <div class="style-item" data-style="professional" onclick="cambiarEstilo('professional', this)">💼 Profesional</div>
+            <div class="style-item" data-style="double" onclick="cambiarEstilo('double', this)">📊 Doble columna</div>
+            <div class="style-item" data-style="compact" onclick="cambiarEstilo('compact', this)">📋 Compacto</div>
+            <div class="style-item" data-style="photobig" onclick="cambiarEstilo('photobig', this)">📸 Foto grande</div>
+            <div class="style-item" data-style="skills" onclick="cambiarEstilo('skills', this)">📈 Barras habilidades</div>
+            <div class="style-item" data-style="elegant" onclick="cambiarEstilo('elegant', this)">🌿 Elegante</div>
+          </div>
+        </div>
+
+        <!-- Selector de colores -->
+        <div>
+          <h3 style="font-family:'Inter',sans-serif; font-weight:600; font-size:0.9rem; margin-bottom:0.6rem;">🎨 Elige un color</h3>
+          <div class="templates-grid">
+            <div class="template-item active" data-theme="indigo" data-color="#2A3B6B" onclick="cambiarTema('indigo','#2A3B6B',this)">
+              <span class="swatch" style="background:#2A3B6B"></span><span class="template-name">Añil</span>
+            </div>
+            <div class="template-item" data-theme="rust" data-color="#A44C3A" onclick="cambiarTema('rust','#A44C3A',this)">
+              <span class="swatch" style="background:#A44C3A"></span><span class="template-name">Óxido</span>
+            </div>
+            <div class="template-item" data-theme="forest" data-color="#2F5233" onclick="cambiarTema('forest','#2F5233',this)">
+              <span class="swatch" style="background:#2F5233"></span><span class="template-name">Bosque</span>
+            </div>
+            <div class="template-item" data-theme="graphite" data-color="#3A3F47" onclick="cambiarTema('graphite','#3A3F47',this)">
+              <span class="swatch" style="background:#3A3F47"></span><span class="template-name">Grafito</span>
+            </div>
+            <div class="template-item" data-theme="wine" data-color="#6B1F3A" onclick="cambiarTema('wine','#6B1F3A',this)">
+              <span class="swatch" style="background:#6B1F3A"></span><span class="template-name">Vino</span>
+            </div>
+            <div class="template-item" data-theme="petrol" data-color="#1F4E5F" onclick="cambiarTema('petrol','#1F4E5F',this)">
+              <span class="swatch" style="background:#1F4E5F"></span><span class="template-name">Petróleo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="descargarPDF()">⬇️ Descargar PDF</button>
+          <button class="btn btn-outline" onclick="window.print()">🖨️ Imprimir</button>
+          <button class="btn btn-ghost" onclick="exportarJSON()">💾 Guardar copia</button>
+          <label class="btn btn-ghost" for="importInput">📂 Cargar copia</label>
+          <input id="importInput" class="file-input" type="file" accept="application/json" />
+          <button class="btn btn-danger" onclick="limpiarTodo()">🗑️ Borrar todo</button>
+        </div>
+      </section>
+
+      <!-- PASO 5: VISTA PREVIA -->
+      <section class="step" data-step="5">
+        <div class="step-header">
+          <span class="step-number">5</span>
+          <div>
+            <h2>Vista previa</h2>
+            <div class="step-hint">Se actualiza en tiempo real al cambiar el estilo, color o contenido.</div>
+          </div>
+        </div>
+
+        <div class="cv-scroll">
+          <div id="cv" class="cv-classic" style="--cv-accent:#2A3B6B">
+            <!-- El contenido se genera dinámicamente con JavaScript -->
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /steps -->
+
+    <!-- PUBLICIDAD INFERIOR -->
+    <div id="publicidadInferior" style="
+      background: linear-gradient(135deg, #f8f4ee 0%, #ece6dc 100%);
+      border: 1px solid var(--border, #e3dfd7);
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      margin: 2rem 0 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: var(--shadow, 0 4px 16px rgba(0,0,0,0.04));
+    ">
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <span style="font-size: 2rem;">🛒</span>
+        <div>
+          <strong style="font-size: 1.1rem; color: var(--text, #1e1b17);">Rehman Express Market</strong>
+          <div style="font-size: 0.85rem; color: var(--text-secondary, #5f5950);">
+            Transferencias · Recargas · Productos latinos · Imprenta
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+        <a href="https://rehmanexpressmarket.github.io/" target="_blank" style="
+          background: var(--accent, #a4533e);
+          color: #fff;
+          padding: 0.5rem 1.2rem;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 0.9rem;
+          transition: background 0.2s;
+        " onmouseover="this.style.background='#7d3a2a'" onmouseout="this.style.background='var(--accent, #a4533e)'">
+          Visitar tienda →
+        </a>
+        <a href="tel:+34941640545" style="
+          background: transparent;
+          border: 1px solid var(--border, #e3dfd7);
+          color: var(--text, #1e1b17);
+          padding: 0.5rem 1.2rem;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 500;
+          font-size: 0.9rem;
+        ">
+          📞 941 64 05 45
+        </a>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      DossierCV · 10 estilos de CV · Procesamiento local · Sin servidor
+    </footer>
+
+  </div><!-- /container -->
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <!-- =====================================================
+     POPUP REHMAN EXPRESS MARKET
+     ===================================================== -->
+  <div id="popupRehman" aria-hidden="true">
+    <div class="popup-rehman-box" role="dialog" aria-modal="true">
+
+      <div class="popup-rehman-logo">🏪</div>
+
+      <h2>Rehman Express Market</h2>
+
+      <p>
+        Transferencias · Recargas · Productos latinos ·
+        Tarjetas SIM · Imprenta
+      </p>
+
+      <div class="popup-rehman-buttons">
+
+        <a
+          href="https://rehmanexpressmarket.github.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-primary"
+        >
+          🛒 Visitar tienda
+        </a>
+
+        <a
+          href="tel:+34941640545"
+          class="btn btn-outline"
+        >
+          📞 Llamar
+        </a>
+
+        <button
+          type="button"
+          class="btn btn-ghost"
+          onclick="cerrarPopupRehman()"
+        >
+          Cerrar
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
